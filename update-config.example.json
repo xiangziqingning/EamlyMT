@@ -1,0 +1,5 @@
+{
+  "owner": "<你的GitHub用户名或组织>",
+  "repo": "workstation-app",
+  "checkIntervalMs": 14400000
+}

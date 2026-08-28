@@ -1,0 +1,17 @@
+{
+  "name": "workstation",
+  "version": "1.10.0",
+  "description": "我的工作站 - 桌面版",
+  "main": "main.js",
+  "author": "zhang",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "pack": "electron-packager . Workstation --platform=win32 --arch=x64 --out=dist --overwrite --asar --electron-version=31.7.7 --icon=icon.ico --app-version=1.10.0 --ignore=\"\\.npm-cache|node_modules|dist|_release|\\.git\"",
+    "dist": "electron-packager . Workstation --platform=win32 --arch=x64 --out=dist --overwrite --asar --electron-version=31.7.7 --icon=icon.ico --app-version=1.10.0 --ignore=\"\\.npm-cache|node_modules|dist|_release|\\.git\""
+  },
+  "devDependencies": {
+    "electron": "^31.7.7",
+    "electron-packager": "^17.1.2"
+  }
+}

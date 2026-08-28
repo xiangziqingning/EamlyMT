@@ -116,7 +116,7 @@ async function getJson(url, opts = {}) {
   if (res.statusCode < 200 || res.statusCode >= 300) {
     throw new Error('HTTP ' + res.statusCode + (body ? ' ' + body.slice(0, 200) : ''));
   }
-  return JSON.parse(body);
+  return JSON.parse(body.replace(/^\uFEFF/, '')); // 去掉可能的 BOM
 }
 
 // 带重试的 JSON 请求（指数退避）
@@ -279,7 +279,7 @@ async function fetchLatestManifest() {
   if (!asset) throw new Error('发布版缺少 ' + cfg.assetName + ' 资产');
   const manText = await readBody(await httpsGet(asset.browser_download_url));
   let man;
-  try { man = JSON.parse(manText); } catch (e) { throw new Error('版本清单格式错误'); }
+  try { man = JSON.parse(manText.replace(/^\uFEFF/, '')); } catch (e) { throw new Error('版本清单格式错误'); }
   // 把 latest.json 里的文件名解析成真实下载地址（来自 release assets）
   const assetMap = {};
   (rel.assets || []).forEach(a => { assetMap[a.name] = a.browser_download_url; });

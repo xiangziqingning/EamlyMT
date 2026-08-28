@@ -1,0 +1,79 @@
+# ============================================================
+# 打 tag（如 v1.11.0）并推送到 GitHub 时，自动构建并发布 Release。
+# 发布物：latest.json + workstation-<version>.asar（工作站自动更新用）
+# ============================================================
+name: build-release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: '版本号（不带 v，如 1.11.0）'
+        required: false
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install deps
+        run: npm ci --no-audit --no-fund
+        env:
+          # 国内镜像加速（runner 官方源亦可，这里提供可选加速）
+          ELECTRON_MIRROR: https://npmmirror.com/mirrors/electron/
+
+      - name: Pack app
+        run: npm run pack
+
+      - name: Compute release version
+        id: ver
+        shell: pwsh
+        run: |
+          $ver = "${{ github.ref_name }}"
+          if ($ver.StartsWith('v')) { $ver = $ver.Substring(1) }
+          $manual = '${{ github.event.inputs.version }}'
+          if ($manual) { $ver = $manual }
+          "VERSION=$ver" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          Write-Host "Release version = $ver"
+
+      - name: Stage release artifacts (extract app.asar + latest.json)
+        shell: pwsh
+        run: |
+          & "${{ github.workspace }}\scripts\stage-release.ps1" `
+            -Version "${{ steps.ver.outputs.VERSION }}" `
+            -ReleaseNotes "自动构建发布。"
+          # 展示产物
+          Get-ChildItem "${{ github.workspace }}\_release" | Format-Table
+
+      - name: Create GitHub Release & upload assets
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: 工作站 v${{ steps.ver.outputs.VERSION }}
+          body: |
+            工作站桌面版 v${{ steps.ver.outputs.VERSION }}
+            此版本由 GitHub Actions 自动构建。工作站应用会自动检测并更新。
+            （更新源：GitHub Releases）
+          draft: false
+          prerelease: false
+          files: |
+            _release/latest.json
+            _release/workstation-*.asar
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Display done
+        run: echo "发布完成，工作站将在检查到 v${{ steps.ver.outputs.VERSION }} 时自动更新。"

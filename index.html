@@ -1,0 +1,2578 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>我的创作工作站</title>
+<style>
+  :root {
+    --bg: #EFF3FC;
+    --card: rgba(255,255,255,.5);
+    --card-hover: rgba(255,255,255,.68);
+    --stroke: rgba(255,255,255,.62);
+    --stroke-strong: rgba(255,255,255,.9);
+    --text: #1C1C2E;
+    --muted: #5B6472;
+    --accent: #3D7BFF;
+    --accent2: #7B5CFF;
+    --accent3: #FF4D9E;
+    --green: #22C55E;
+    --red: #FF3B5C;
+    --yellow: #FFB020;
+    --radius: 20px;
+    --shadow: 0 8px 32px rgba(70,90,180,.16);
+    --grad-main: linear-gradient(135deg, #4D8DFF, #7B5CFF);
+    --grad-warm: linear-gradient(120deg, #3D7BFF, #7B5CFF, #FF4D9E);
+    --font-serif: -apple-system, "SF Pro SC", "PingFang SC", "HarmonyOS Sans SC", "Microsoft YaHei", sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { color-scheme: light; }
+  ::selection { background: rgba(61,123,255,.25); }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro SC", "SF Pro Text", "PingFang SC", "HarmonyOS Sans SC", "Segoe UI", "Microsoft YaHei", sans-serif;
+    background:
+      radial-gradient(900px 500px at 12% -8%, rgba(93,140,255,.55), transparent 62%),
+      radial-gradient(800px 520px at 88% 4%, rgba(190,120,255,.45), transparent 62%),
+      radial-gradient(720px 500px at 6% 96%, rgba(255,120,190,.38), transparent 62%),
+      radial-gradient(900px 620px at 94% 92%, rgba(80,220,180,.38), transparent 62%),
+      linear-gradient(160deg, #EDF2FF, #F4F0FF 50%, #FFF0F6);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 24px 28px;
+    -webkit-font-smoothing: antialiased;
+  }
+  /* 流动的彩色光球（玻璃后面的景色） */
+  .orb {
+    position: fixed; border-radius: 50%; filter: blur(80px); opacity: .55;
+    z-index: -1; pointer-events: none; animation: float 22s ease-in-out infinite alternate;
+  }
+  .orb1 { width: 560px; height: 560px; background: radial-gradient(circle, #7FA8FF, transparent 65%); top: -160px; left: -100px; }
+  .orb2 { width: 480px; height: 480px; background: radial-gradient(circle, #C39BFF, transparent 65%); bottom: -140px; right: -80px; animation-delay: -8s; }
+  .orb3 { width: 400px; height: 400px; background: radial-gradient(circle, #FF9ECB, transparent 65%); top: 40%; left: 55%; opacity: .4; animation-delay: -14s; }
+  @keyframes float { from { transform: translate(0,0) scale(1); } to { transform: translate(60px,-40px) scale(1.12); } }
+
+  /* 顶部 */
+  header {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    flex-wrap: wrap; gap: 16px; margin-bottom: 14px;
+  }
+  .greet h1 {
+    font-size: 34px; font-weight: 700; letter-spacing: .5px; color: var(--text);
+  }
+  .greet h1::after {
+    content: ''; display: block; width: 40px; height: 4px; margin-top: 8px;
+    border-radius: 4px; background: var(--grad-main);
+  }
+  .greet p { color: var(--muted); margin-top: 6px; font-size: 14px; }
+  .clock-box { text-align: right; }
+  .clock-time {
+    font-size: 38px; font-weight: 300; letter-spacing: 2px; font-variant-numeric: tabular-nums;
+    color: var(--text);
+  }
+  .clock-date { color: var(--muted); font-size: 13px; margin-top: 4px; }
+
+  /* 标签页：玻璃分段控件 */
+  .tabs {
+    display: flex; gap: 4px; margin-bottom: 20px; flex-wrap: wrap;
+    background: rgba(255,255,255,.35); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+    padding: 4px; border-radius: 14px; border: 1px solid rgba(255,255,255,.55);
+    width: fit-content; max-width: 100%;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.6);
+  }
+  .tab-btn {
+    padding: 8px 16px; border-radius: 11px; cursor: pointer; font-size: 14px; font-weight: 500;
+    background: transparent; border: none; color: var(--muted);
+    transition: all .2s ease; white-space: nowrap; font-family: inherit;
+  }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active {
+    background: rgba(255,255,255,.85); color: var(--text); font-weight: 600;
+    box-shadow: 0 2px 12px rgba(70,90,180,.18), inset 0 1px 0 rgba(255,255,255,.9);
+  }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; animation: fadeIn .3s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
+  .card {
+    background: var(--card);
+    backdrop-filter: blur(26px) saturate(180%); -webkit-backdrop-filter: blur(26px) saturate(180%);
+    border: 1px solid var(--stroke); border-radius: var(--radius);
+    padding: 18px 20px; display: flex; flex-direction: column; position: relative; overflow: hidden;
+    box-shadow: var(--shadow), inset 0 1px 0 rgba(255,255,255,.75);
+    transition: transform .2s ease, box-shadow .2s ease, background .2s ease;
+    animation: rise .5s ease both;
+  }
+  .card:hover { transform: translateY(-2px); background: var(--card-hover); box-shadow: 0 14px 44px rgba(70,90,180,.22), inset 0 1px 0 rgba(255,255,255,.85); }
+  @keyframes rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+  .grid > .card:nth-child(2) { animation-delay: .05s; }
+  .grid > .card:nth-child(3) { animation-delay: .1s; }
+  .grid > .card:nth-child(4) { animation-delay: .15s; }
+  .grid > .card:nth-child(5) { animation-delay: .2s; }
+  .grid > .card:nth-child(6) { animation-delay: .25s; }
+  .grid > .card:nth-child(7) { animation-delay: .3s; }
+  .grid > .card:nth-child(8) { animation-delay: .35s; }
+  .span2 { grid-column: span 2; }
+  .card h2 {
+    font-size: 13px; font-weight: 600; color: var(--muted);
+    margin-bottom: 12px; display: flex; align-items: center; gap: 8px; letter-spacing: .5px;
+  }
+  .card h2 .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+
+  /* 按钮：玻璃按钮 */
+  .btn {
+    background: rgba(255,255,255,.55); color: var(--text); border: 1px solid rgba(255,255,255,.7);
+    border-radius: 12px; padding: 9px 18px; cursor: pointer; font-size: 14px;
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.8), 0 2px 8px rgba(70,90,180,.10);
+    transition: all .15s ease; font-family: inherit;
+  }
+  .btn:hover { filter: brightness(1.03); background: rgba(255,255,255,.7); }
+  .btn:active { transform: scale(.96); }
+  .btn.primary {
+    background: var(--grad-main); color: #fff; border-color: rgba(255,255,255,.35);
+    box-shadow: 0 4px 16px rgba(77,141,255,.35), inset 0 1px 0 rgba(255,255,255,.35);
+  }
+  .btn.green { background: linear-gradient(135deg, #22C55E, #16A34A); color: #fff; border-color: rgba(255,255,255,.35); }
+  .btn.small { padding: 5px 12px; font-size: 12px; border-radius: 9px; }
+  .btn:disabled { opacity: .5; cursor: not-allowed; }
+
+  /* chip：玻璃药丸 */
+  .chip-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+  .chip {
+    padding: 5px 14px; border-radius: 999px; font-size: 13px; cursor: pointer;
+    background: rgba(255,255,255,.5); color: var(--muted); border: 1px solid rgba(255,255,255,.65);
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    transition: all .15s ease; font-family: inherit;
+  }
+  .chip:hover { color: var(--text); background: rgba(255,255,255,.7); }
+  .chip.active { background: var(--grad-main); color: #fff; border-color: rgba(255,255,255,.35); font-weight: 500; }
+
+  /* 输入控件：玻璃输入框 */
+  input, textarea, select {
+    background: rgba(255,255,255,.5); color: var(--text); border: 1px solid rgba(255,255,255,.65);
+    outline: none; transition: border-color .2s, box-shadow .2s; font-family: inherit;
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  }
+  input:focus, textarea:focus, select:focus {
+    border-color: var(--accent); box-shadow: 0 0 0 3px rgba(61,123,255,.18);
+  }
+  ::placeholder { color: #9AA3B5; }
+
+  /* 搜索 */
+  .search-row { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; position: relative; z-index: 1; }
+  .search-row select { padding: 0 10px; border-radius: 12px; font-size: 14px; flex-shrink: 0; }
+  .search-row input { flex: 1 1 100px; min-width: 0; padding: 11px 14px; border-radius: 12px; font-size: 14px; }
+  .search-row button {
+    flex-shrink: 0; background: var(--grad-main); color: #fff; border: none; border-radius: 12px;
+    padding: 0 20px; cursor: pointer; font-size: 14px; font-weight: 500;
+    box-shadow: 0 4px 14px rgba(77,141,255,.3);
+  }
+  .search-row button:hover { filter: brightness(1.08); }
+
+  /* 快捷链接：玻璃宫格 */
+  .links { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .link-item {
+    background: rgba(255,255,255,.45); border: 1px solid rgba(255,255,255,.6); border-radius: 16px;
+    padding: 12px 6px; text-align: center; cursor: pointer; position: relative;
+    text-decoration: none; color: var(--text);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    transition: transform .15s ease, background .15s ease;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.7);
+  }
+  .link-item:hover { background: rgba(255,255,255,.75); }
+  .link-item:active { transform: scale(.95); }
+  .link-item .icon { font-size: 26px; display: block; margin-bottom: 6px; }
+  .link-item .name { font-size: 12px; color: var(--muted); word-break: break-all; }
+  .link-item .del {
+    position: absolute; top: 3px; right: 6px; color: var(--red); font-size: 12px;
+    opacity: 0; transition: opacity .15s; background: none; border: none; cursor: pointer;
+  }
+  .link-item:hover .del { opacity: 1; }
+  .add-link {
+    border: 1px dashed var(--stroke-strong); color: var(--muted); display: flex;
+    align-items: center; justify-content: center; border-radius: 16px; cursor: pointer;
+    min-height: 64px; font-size: 20px; transition: all .15s ease; background: rgba(255,255,255,.25);
+  }
+  .add-link:hover { color: var(--accent); border-color: var(--accent); }
+
+  /* 待办：玻璃行 + iOS 圆形勾选 */
+  .todo-input { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+  .todo-input input { flex: 1 1 100px; min-width: 0; padding: 10px 12px; border-radius: 12px; font-size: 14px; }
+  .todo-input button {
+    flex-shrink: 0; background: var(--grad-main); color: #fff; border: none; border-radius: 12px; padding: 0 16px; cursor: pointer; font-weight: 500;
+  }
+  .todo-list { list-style: none; max-height: 300px; overflow-y: auto; }
+  .todo-list li {
+    display: flex; align-items: center; gap: 10px; padding: 9px 4px;
+    border-bottom: 1px solid rgba(90,100,140,.12); font-size: 14px;
+  }
+  .todo-list li:last-child { border-bottom: none; }
+  .todo-list li input[type=checkbox] {
+    width: 20px; height: 20px; appearance: none; -webkit-appearance: none;
+    border: 1.5px solid #AAB2C8; border-radius: 50%; cursor: pointer; flex-shrink: 0;
+    position: relative; transition: all .15s ease; background: rgba(255,255,255,.7);
+  }
+  .todo-list li input[type=checkbox]:checked { background: var(--accent); border-color: var(--accent); }
+  .todo-list li input[type=checkbox]:checked::after {
+    content: ''; position: absolute; left: 6px; top: 2.5px; width: 5px; height: 9px;
+    border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(45deg);
+  }
+  .todo-list li span { flex: 1; word-break: break-all; }
+  .todo-list li.done span { text-decoration: line-through; color: var(--muted); }
+  .todo-list li .del { color: var(--red); background: none; border: none; cursor: pointer; font-size: 13px; opacity: .5; }
+  .todo-list li .del:hover { opacity: 1; }
+  .todo-count { color: var(--muted); font-size: 12px; margin-top: 8px; }
+
+  /* 记事本 */
+  .notes textarea {
+    flex: 1; min-height: 200px; border-radius: 14px; padding: 12px;
+    font-size: 14px; line-height: 1.8; resize: vertical;
+  }
+  .notes .meta { color: var(--muted); font-size: 12px; margin-top: 8px; }
+
+  /* 番茄钟 */
+  .pomodoro { text-align: center; }
+  .pomo-display {
+    font-size: 60px; font-weight: 200; font-variant-numeric: tabular-nums; margin: 8px 0 14px;
+    color: var(--text);
+  }
+  .pomo-controls { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
+  .pomo-controls button {
+    background: rgba(255,255,255,.5); color: var(--text); border: 1px solid rgba(255,255,255,.65);
+    border-radius: 12px; padding: 9px 20px; cursor: pointer; font-size: 14px; transition: all .15s ease; font-family: inherit;
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.7);
+  }
+  .pomo-controls button.primary { background: var(--grad-main); color: #fff; border-color: rgba(255,255,255,.35); }
+  .pomo-controls button:hover { filter: brightness(1.03); }
+  .pomo-controls button:active { transform: scale(.96); }
+  .pomo-mode { font-size: 13px; color: var(--muted); margin-bottom: 4px; }
+
+  /* 天气 */
+  .weather-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .weather-top input { border-radius: 12px; padding: 8px 10px; font-size: 13px; width: 140px; }
+  .weather-main { display: flex; align-items: center; gap: 14px; margin-bottom: 8px; }
+  .weather-temp { font-size: 44px; font-weight: 200; }
+  .weather-desc { color: var(--muted); font-size: 14px; }
+  .weather-mini { color: var(--muted); font-size: 13px; line-height: 1.9; }
+
+  /* ===== 写作工坊 ===== */
+  .gen-output {
+    background: rgba(255,255,255,.4); border: 1px solid rgba(255,255,255,.6); border-radius: 16px;
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    padding: 18px; font-size: 15px; line-height: 1.9; min-height: 92px; margin-bottom: 12px;
+    display: flex; align-items: center; justify-content: center; text-align: center; color: var(--text);
+  }
+  .gen-output.small { font-size: 14px; padding: 12px 14px; min-height: 46px; margin-bottom: 0; }
+  .gen-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-top: 12px; }
+
+  /* 角色卡 */
+  .char-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 14px; font-size: 13px; line-height: 1.9; }
+  .char-fields b { color: var(--muted); font-weight: 500; margin-right: 6px; }
+  .char-fields .wide { grid-column: span 2; }
+
+  /* 素材箱 */
+  .mat-add { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+  .mat-add textarea {
+    border-radius: 12px; padding: 10px; font-size: 13px; resize: vertical; min-height: 56px;
+  }
+  .mat-add-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .mat-add-row select { border-radius: 12px; padding: 6px 8px; font-size: 13px; flex-shrink: 0; }
+  .mat-add-row .btn { flex: 1; }
+  .mat-list { max-height: 260px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
+  .mat-item {
+    background: rgba(255,255,255,.45); border: 1px solid rgba(255,255,255,.6); border-radius: 14px;
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    padding: 10px 12px; font-size: 13px; position: relative;
+  }
+  .mat-item .mat-tag {
+    display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 10px;
+    background: rgba(61,123,255,.15); color: var(--accent); margin-right: 8px;
+  }
+  .mat-item .mat-del {
+    position: absolute; top: 6px; right: 10px; color: var(--red); background: none;
+    border: none; cursor: pointer; opacity: .5; font-size: 13px;
+  }
+  .mat-item .mat-del:hover { opacity: 1; }
+  .mat-empty { color: var(--muted); font-size: 13px; text-align: center; padding: 20px 0; }
+
+  /* 人设卡 */
+  .char-add-row { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+  .char-add-row input { flex: 1 1 100px; min-width: 0; border-radius: 12px; padding: 9px 12px; font-size: 13px; }
+  .char-list { max-height: 300px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
+  .char-card {
+    background: rgba(255,255,255,.45); border: 1px solid rgba(255,255,255,.6); border-radius: 14px;
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    padding: 10px 12px; cursor: pointer; transition: border-color .15s ease, background .15s ease;
+  }
+  .char-card:hover { border-color: rgba(61,123,255,.45); background: rgba(255,255,255,.7); }
+  .char-card .char-name { font-size: 14px; font-weight: 600; }
+  .char-card .char-tag { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .char-card .char-detail { font-size: 12.5px; color: var(--text); line-height: 1.8; margin-top: 6px; white-space: pre-wrap; display: none; }
+  .char-card.open .char-detail { display: block; }
+  .char-card .char-del {
+    float: right; color: var(--red); background: none; border: none; cursor: pointer; opacity: .5; font-size: 13px;
+  }
+  .char-card .char-del:hover { opacity: 1; }
+
+  /* 写作区 */
+  .write-wrap { display: flex; gap: 12px; flex: 1; min-height: 380px; }
+  .chapter-side { width: 150px; flex-shrink: 0; display: flex; flex-direction: column; gap: 6px; }
+  .chapter-side .chap {
+    background: rgba(255,255,255,.45); border: 1px solid rgba(255,255,255,.6); border-radius: 12px;
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    padding: 9px 10px; font-size: 12.5px; cursor: pointer; word-break: break-all; position: relative;
+    transition: all .15s ease;
+  }
+  .chapter-side .chap:hover { border-color: rgba(61,123,255,.45); background: rgba(255,255,255,.7); }
+  .chapter-side .chap.active { border-color: var(--accent); background: rgba(61,123,255,.15); }
+  .chapter-side .chap .cdel {
+    position: absolute; top: 3px; right: 6px; color: var(--red); background: none; border: none;
+    cursor: pointer; font-size: 11px; opacity: 0;
+  }
+  .chapter-side .chap:hover .cdel { opacity: 1; }
+  .chapter-side .chapadd {
+    border: 1px dashed var(--stroke-strong); color: var(--muted); text-align: center; padding: 9px;
+    border-radius: 12px; cursor: pointer; font-size: 12.5px; transition: all .15s ease;
+    background: rgba(255,255,255,.25);
+  }
+  .chapter-side .chapadd:hover { color: var(--accent); border-color: var(--accent); }
+  .write-main { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+  .write-main input.chap-title {
+    background: transparent; border: none; border-bottom: 1px solid rgba(90,100,140,.25); color: var(--text);
+    font-size: 18px; font-weight: 600; padding: 4px 2px 8px;
+  }
+  .write-main input.chap-title:focus { border-color: var(--accent); box-shadow: none; }
+  .write-main textarea {
+    flex: 1; border-radius: 14px; padding: 14px; font-size: 15.5px; line-height: 2.1;
+    resize: vertical; min-height: 300px;
+  }
+  .write-stats { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; font-size: 13px; color: var(--muted); }
+  .write-stats b { color: var(--text); }
+  .goal-bar { flex: 1; min-width: 120px; height: 6px; background: rgba(90,100,140,.15); border-radius: 3px; overflow: hidden; }
+  .goal-bar i {
+    display: block; height: 100%; background: linear-gradient(90deg, #22C55E, #3D7BFF, #7B5CFF);
+    border-radius: 3px; transition: width .3s;
+  }
+  .goal-input {
+    width: 64px; border-radius: 8px; padding: 3px 6px; font-size: 12px; text-align: center;
+  }
+
+  /* 名言 */
+  .quote-text {
+    font-family: var(--font-serif); font-size: 16px; line-height: 2; text-align: center;
+    min-height: 60px; display: flex; align-items: center; justify-content: center; color: var(--text);
+  }
+  .quote-from { text-align: right; color: var(--muted); font-size: 12px; margin-top: 8px; }
+
+  /* ===== Obsidian ===== */
+  .obs-status {
+    font-size: 14px; color: var(--muted); margin-bottom: 12px; padding: 12px 14px;
+    background: rgba(255,255,255,.4); border: 1px solid rgba(255,255,255,.6); border-radius: 14px;
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    word-break: break-all; line-height: 1.8;
+  }
+  .obs-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .obs-stats { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+  .obs-stat {
+    flex: 1; min-width: 100px; text-align: center;
+    background: rgba(255,255,255,.4); border: 1px solid rgba(255,255,255,.6); border-radius: 14px; padding: 12px 6px;
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  }
+  .obs-stat b {
+    display: block; font-size: 24px; font-weight: 700;
+    background: var(--grad-warm); -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .obs-stat span { font-size: 12px; color: var(--muted); }
+  .obs-goal { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+  .obs-chart { display: flex; align-items: flex-end; gap: 8px; height: 90px; padding-top: 6px; }
+  .obs-chart .bar { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 4px; height: 100%; }
+  .obs-chart .bar i {
+    width: 100%; max-width: 34px; border-radius: 6px 6px 0 0;
+    background: linear-gradient(180deg, #3D7BFF, #7B5CFF);
+    transition: height .4s ease; min-height: 2px;
+  }
+  .obs-chart .bar span { font-size: 10px; color: var(--muted); }
+  .obs-files { max-height: 320px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
+  .obs-file {
+    display: flex; align-items: center; gap: 10px;
+    background: rgba(255,255,255,.4); border: 1px solid rgba(255,255,255,.6); border-radius: 12px;
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    padding: 8px 12px; font-size: 13px;
+  }
+  .obs-file .f-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .obs-file .f-meta { color: var(--muted); font-size: 11.5px; white-space: nowrap; }
+  .obs-file button {
+    background: rgba(61,123,255,.14); color: var(--accent);
+    border: none; border-radius: 8px;
+    padding: 4px 10px; font-size: 12px; cursor: pointer; flex-shrink: 0; font-family: inherit;
+  }
+  .obs-file button:hover { filter: brightness(1.1); }
+  .obs-tools { display: flex; flex-direction: column; gap: 10px; }
+  .tool-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .tool-row input { flex: 1 1 140px; min-width: 0; border-radius: 12px; padding: 10px 12px; font-size: 13px; }
+  .obs-tools textarea { border-radius: 12px; padding: 10px; font-size: 13px; resize: vertical; min-height: 70px; }
+  .obs-empty { color: var(--muted); font-size: 13px; text-align: center; padding: 20px 0; }
+
+  /* ===== 网络工具箱 ===== */
+  .net-tip { font-size: 12.5px; color: var(--muted); line-height: 1.9; margin-bottom: 12px; }
+  .net-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+  .net-list { display: flex; flex-direction: column; gap: 6px; max-height: 300px; overflow-y: auto; }
+  .net-row {
+    display: flex; align-items: center; gap: 10px;
+    background: rgba(255,255,255,.4); border: 1px solid rgba(255,255,255,.6); border-radius: 12px;
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    padding: 8px 12px; font-size: 13px;
+  }
+  .net-row.best { border-color: rgba(34,197,94,.55); background: rgba(34,197,94,.12); }
+  .net-row code { color: var(--muted); font-size: 12px; flex-shrink: 0; }
+  .net-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .net-ms { font-variant-numeric: tabular-nums; font-weight: 600; flex-shrink: 0; }
+  .net-ms.ok { color: #16A34A; }
+  .net-ms.warn { color: var(--yellow); }
+  .net-ms.bad { color: var(--red); }
+  .net-best { margin-top: 10px; font-size: 13px; color: #16A34A; font-weight: 600; }
+  .net-empty { color: var(--muted); font-size: 13px; text-align: center; padding: 16px 0; }
+
+  /* 弹窗：玻璃卡片 */
+  .modal-mask {
+    position: fixed; inset: 0; background: rgba(90,100,160,.25); display: none;
+    align-items: center; justify-content: center; z-index: 99; backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+  }
+  .modal-mask.show { display: flex; }
+  .modal {
+    background: rgba(255,255,255,.75);
+    backdrop-filter: blur(30px) saturate(180%); -webkit-backdrop-filter: blur(30px) saturate(180%);
+    border: 1px solid rgba(255,255,255,.8); border-radius: 22px;
+    padding: 24px; width: min(92vw, 380px);
+    box-shadow: 0 24px 70px rgba(70,90,180,.3), inset 0 1px 0 rgba(255,255,255,.9);
+    animation: fadeIn .25s ease;
+  }
+  .modal h3 { font-size: 17px; font-weight: 600; margin-bottom: 14px; }
+  .modal label { display: block; font-size: 13px; color: var(--muted); margin: 10px 0 4px; }
+  .modal input { width: 100%; border-radius: 12px; padding: 10px 12px; font-size: 14px; }
+  .modal-btns { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; }
+  .modal-btns button {
+    background: rgba(255,255,255,.6); color: var(--text); border: 1px solid rgba(255,255,255,.75);
+    border-radius: 12px; padding: 9px 18px; cursor: pointer; transition: all .15s ease; font-family: inherit;
+  }
+  .modal-btns button:hover { filter: brightness(1.05); }
+  .modal-btns button.primary { background: var(--grad-main); color: #fff; border-color: transparent; }
+
+  footer {
+    margin-top: 28px; text-align: center; color: var(--muted); font-size: 12px;
+  }
+
+  /* 滚动条 */
+  ::-webkit-scrollbar { width: 9px; height: 9px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(90,100,140,.3); border-radius: 5px;
+    border: 2px solid transparent; background-clip: padding-box;
+  }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(90,100,140,.45); background-clip: padding-box; }
+
+  @media (max-width: 700px) {
+    body { padding: 14px; }
+    .clock-box { text-align: left; }
+    .grid { grid-template-columns: 1fr; }
+    .span2 { grid-column: span 1; }
+    .char-fields { grid-template-columns: 1fr; }
+    .write-wrap { flex-direction: column; }
+    .chapter-side { width: 100%; flex-direction: row; flex-wrap: wrap; }
+    .write-main textarea { min-height: 240px; }
+  }
+
+  /* 软件更新 */
+  .upd-pill {
+    display: inline-flex; align-items: center; gap: 6px; margin-bottom: 8px;
+    padding: 6px 14px; border-radius: 999px; cursor: pointer; font-size: 13px; font-weight: 600;
+    background: rgba(255,255,255,.5); border: 1px solid rgba(255,255,255,.6);
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    color: var(--muted); box-shadow: inset 0 1px 0 rgba(255,255,255,.8);
+    transition: all .2s ease; user-select: none;
+  }
+  .upd-pill:hover { background: rgba(255,255,255,.75); color: var(--text); }
+  .upd-pill .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); }
+  .upd-pill.has-update .dot { background: var(--accent); box-shadow: 0 0 0 4px rgba(61,123,255,.2); }
+  .upd-pill.error .dot { background: var(--red); }
+  .upd-pill.checking .dot { background: var(--yellow); animation: blink 1s infinite; }
+  @keyframes blink { 50% { opacity: .3; } }
+
+  .upd-status { font-size: 14px; color: var(--text); margin: 4px 0 12px; line-height: 1.5; }
+  .upd-status .upd-ok { color: var(--green); font-weight: 600; }
+  .upd-status .upd-warn { color: var(--yellow); font-weight: 600; }
+  .upd-status .upd-err { color: var(--red); font-weight: 600; }
+
+  .upd-progress { display: flex; align-items: center; gap: 12px; margin: 4px 0 14px; }
+  .upd-bar { flex: 1; height: 10px; border-radius: 999px; background: rgba(255,255,255,.6); overflow: hidden; box-shadow: inset 0 1px 2px rgba(70,90,180,.18); }
+  .upd-bar-fill { height: 100%; width: 0%; border-radius: 999px; background: var(--grad-main); transition: width .25s ease; }
+  .upd-percent { font-size: 12px; color: var(--muted); min-width: 38px; text-align: right; font-variant-numeric: tabular-nums; }
+
+  .upd-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 2px; }
+  .upd-notes { margin-top: 12px; padding: 12px 14px; border-radius: 12px; background: rgba(255,255,255,.45); border: 1px solid rgba(255,255,255,.6); font-size: 13px; color: var(--muted); line-height: 1.6; white-space: pre-wrap; max-height: 140px; overflow: auto; }
+  .upd-notes strong { color: var(--text); }
+  .upd-version { color: var(--accent); font-weight: 700; }
+  .upd-releaselink { font-size: 12px; color: var(--accent); text-decoration: none; }
+
+</style>
+</head>
+<body>
+
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
+<div class="orb orb3"></div>
+
+<header>
+  <div class="greet">
+    <h1 id="greetTitle">你好 👋</h1>
+    <p id="greetSub">欢迎回来，开始今天的工作吧</p>
+    <div class="upd-pill" id="updPill" onclick="switchTab('work'); updCheck()">
+      <span class="dot"></span><span id="updPillText">检查更新…</span>
+    </div>
+  </div>
+  <div class="clock-box">
+    <div class="clock-time" id="clockTime">--:--:--</div>
+    <div class="clock-date" id="clockDate">----年--月--日 星期-</div>
+  </div>
+</header>
+
+<nav class="tabs">
+  <button class="tab-btn active" data-tab="work" onclick="switchTab('work')">🛠️ 工作台</button>
+  <button class="tab-btn" data-tab="write" onclick="switchTab('write')">✍️ 写作工坊</button>
+  <button class="tab-btn" data-tab="obs" onclick="switchTab('obs')">📓 Obsidian</button>
+  <button class="tab-btn" data-tab="net" onclick="switchTab('net')">🌐 网络工具箱</button>
+  <button class="tab-btn" data-tab="perf" onclick="switchTab('perf')">⚡ 性能优化</button>
+  <button class="tab-btn" data-tab="api" onclick="switchTab('api')">💰 API 余额</button>
+  <button class="tab-btn" data-tab="disk" onclick="switchTab('disk')">🧹 磁盘清理</button>
+</nav>
+
+<!-- ============ 工作台 ============ -->
+<main class="tab-panel active" id="tab-work">
+  <div class="grid">
+
+    <section class="card span2" id="updateCard">
+      <h2><span class="dot" style="background:var(--yellow)"></span>软件更新
+        <span id="updVersionBadge" style="margin-left:auto;font-size:12px;color:var(--muted)">v—</span>
+      </h2>
+      <div class="upd-status" id="updStatus">正在加载更新信息…</div>
+      <div class="upd-progress" id="updProgressWrap" style="display:none">
+        <div class="upd-bar"><div class="upd-bar-fill" id="updProgressFill"></div></div>
+        <span class="upd-percent" id="updPercent">0%</span>
+      </div>
+      <div class="upd-actions" id="updActions">
+        <button class="btn primary" id="updCheckBtn" onclick="updCheck()">检查更新</button>
+        <button class="btn green" id="updInstallBtn" style="display:none" onclick="updInstall()">下载并安装</button>
+      </div>
+      <div class="upd-notes" id="updNotes" style="display:none"></div>
+    </section>
+
+    <section class="card">
+      <h2><span class="dot" style="background:var(--accent)"></span>搜索</h2>
+      <div class="search-row">
+        <select id="engine">
+          <option value="bing">必应</option>
+          <option value="baidu">百度</option>
+          <option value="google">谷歌</option>
+          <option value="duckduckgo">DuckDuckGo</option>
+        </select>
+        <input id="searchInput" type="text" placeholder="输入关键词搜索…" autocomplete="off">
+        <button onclick="doSearch()">搜索</button>
+      </div>
+      <div class="links" id="quickLinks"></div>
+    </section>
+
+    <section class="card">
+      <h2><span class="dot" style="background:var(--green)"></span>待办清单</h2>
+      <div class="todo-input">
+        <input id="todoInput" type="text" placeholder="添加新任务…" autocomplete="off">
+        <button onclick="addTodo()">添加</button>
+      </div>
+      <ul class="todo-list" id="todoList"></ul>
+      <div class="todo-count" id="todoCount"></div>
+    </section>
+
+    <section class="card pomodoro">
+      <h2 style="justify-content:center"><span class="dot" style="background:var(--red)"></span>番茄钟</h2>
+      <div class="pomo-mode" id="pomoMode">专注 25:00</div>
+      <div class="pomo-display" id="pomoDisplay">25:00</div>
+      <div class="pomo-controls">
+        <button class="primary" id="pomoStart" onclick="pomoToggle()">开始</button>
+        <button onclick="pomoReset()">重置</button>
+        <button onclick="pomoSkip()">跳过</button>
+      </div>
+    </section>
+
+    <section class="card notes">
+      <h2><span class="dot" style="background:var(--yellow)"></span>记事本</h2>
+      <textarea id="notesArea" placeholder="随手记点什么…（自动保存）"></textarea>
+      <div class="meta" id="notesMeta">内容自动保存在本浏览器中</div>
+    </section>
+
+    <section class="card">
+      <h2><span class="dot" style="background:var(--accent2)"></span>天气</h2>
+      <div class="weather-top">
+        <input id="cityInput" type="text" placeholder="城市名，如 北京" autocomplete="off">
+        <button class="btn primary" style="padding:7px 14px" onclick="loadWeather()">查询</button>
+      </div>
+      <div class="weather-main" id="weatherMain"><div class="weather-desc">输入城市名查询天气</div></div>
+      <div class="weather-mini" id="weatherMini"></div>
+    </section>
+
+  </div>
+</main>
+
+<!-- ============ 写作工坊 ============ -->
+<main class="tab-panel" id="tab-write">
+  <div class="grid">
+
+    <!-- 灵感发生器 -->
+    <section class="card span2">
+      <h2><span class="dot" style="background:var(--accent)"></span>✨ 灵感发生器</h2>
+      <div class="chip-row" id="inspCats">
+        <span class="chip active" data-cat="all">全部</span>
+        <span class="chip" data-cat="plot">剧情</span>
+        <span class="chip" data-cat="char">人物</span>
+        <span class="chip" data-cat="scene">场景</span>
+        <span class="chip" data-cat="conflict">冲突</span>
+        <span class="chip" data-cat="twist">反转</span>
+        <span class="chip" data-cat="theme">主题</span>
+      </div>
+      <div class="gen-actions" style="margin-top:0;margin-bottom:10px;justify-content:flex-start">
+        <button class="btn primary" onclick="genInspiration()">🎲 随机点子</button>
+        <button class="btn" onclick="genCombo()">🔀 故事组合</button>
+        <button class="btn" onclick="genCollide()">⚡ 双词碰撞</button>
+      </div>
+      <div class="gen-output" id="inspOutput">点上面的按钮，让灵感冒出来 ✨</div>
+      <div class="gen-actions">
+        <button class="btn green small" onclick="favInsp()">⭐ 收藏到素材箱</button>
+      </div>
+    </section>
+
+    <!-- 写作提示 -->
+    <section class="card">
+      <h2><span class="dot" style="background:var(--green)"></span>📝 随机写作提示</h2>
+      <div class="chip-row" id="promptGenres"></div>
+      <div class="gen-output" id="promptOutput">选一个类型，开始写吧</div>
+      <div class="gen-actions">
+        <button class="btn primary small" onclick="genPrompt()">🎲 换一个提示</button>
+        <button class="btn green small" onclick="favPrompt()">⭐ 收藏</button>
+      </div>
+    </section>
+
+    <!-- 角色生成器 -->
+    <section class="card">
+      <h2><span class="dot" style="background:var(--accent2)"></span>🎭 角色生成器</h2>
+      <div class="gen-output small" id="charGenName" style="margin-bottom:10px"></div>
+      <div class="char-fields" id="charGenFields"></div>
+      <div class="gen-actions">
+        <button class="btn primary small" onclick="genCharacter()">🎲 重新生成</button>
+        <button class="btn green small" onclick="saveCharFromGen()">💾 存为人设卡</button>
+      </div>
+    </section>
+
+    <!-- 名字生成器 -->
+    <section class="card">
+      <h2><span class="dot" style="background:var(--yellow)"></span>🔤 名字生成器</h2>
+      <div class="chip-row" id="nameTypes">
+        <span class="chip active" data-nt="char">角色名</span>
+        <span class="chip" data-nt="book">书名</span>
+        <span class="chip" data-nt="place">地名</span>
+        <span class="chip" data-nt="sect">门派/组织</span>
+        <span class="chip" data-nt="magic">魔法/咒语</span>
+      </div>
+      <div class="gen-output" id="nameOutput">选择一个类型生成名字</div>
+      <div class="gen-actions">
+        <button class="btn primary small" onclick="genName()">🎲 生成</button>
+        <button class="btn green small" onclick="favName()">⭐ 收藏</button>
+      </div>
+    </section>
+
+    <!-- 素材收集箱 -->
+    <section class="card span2">
+      <h2><span class="dot" style="background:var(--red)"></span>📦 素材收集箱</h2>
+      <div class="mat-add">
+        <textarea id="matInput" placeholder="随时记录一闪而过的灵感、句子、点子…"></textarea>
+        <div class="mat-add-row">
+          <select id="matTag">
+            <option value="灵感">灵感</option>
+            <option value="人物">人物</option>
+            <option value="剧情">剧情</option>
+            <option value="场景">场景</option>
+            <option value="金句">金句</option>
+            <option value="其他">其他</option>
+          </select>
+          <button class="btn primary" onclick="addMat()">保存素材</button>
+        </div>
+      </div>
+      <div class="chip-row" id="matFilters"></div>
+      <div class="mat-list" id="matList"></div>
+    </section>
+
+    <!-- 人设卡 -->
+    <section class="card">
+      <h2><span class="dot" style="background:var(--green)"></span>👤 人设卡</h2>
+      <div class="char-add-row">
+        <input id="charNameInput" type="text" placeholder="角色名">
+      </div>
+      <div class="char-add-row">
+        <input id="charTagInput" type="text" placeholder="一句话人设（可选）">
+        <button class="btn primary" onclick="addCharManual()">添加</button>
+      </div>
+      <div class="char-list" id="charList"></div>
+    </section>
+
+    <!-- 写作区 -->
+    <section class="card span2">
+      <h2><span class="dot" style="background:var(--accent)"></span>🖊️ 写作区</h2>
+      <div class="write-wrap">
+        <div class="chapter-side" id="chapterSide"></div>
+        <div class="write-main">
+          <input class="chap-title" id="chapTitle" type="text" placeholder="章节标题">
+          <textarea id="writeArea" placeholder="从这里开始写你的故事…（自动保存）"></textarea>
+          <div class="write-stats">
+            <span>本章 <b id="statChap">0</b> 字</span>
+            <span>累计 <b id="statTotal">0</b> 字</span>
+            <span class="goal-bar"><i id="goalBar" style="width:0%"></i></span>
+            <span>今日 <b id="statToday">0</b> / <input class="goal-input" id="goalInput" type="number" value="2000" min="100" step="100"> 字</span>
+            <span>连续写作 <b id="statStreak">0</b> 天 🔥</span>
+            <span id="saveMeta" style="color:var(--muted);font-size:12px"></span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 写作名言 -->
+    <section class="card">
+      <h2><span class="dot" style="background:var(--yellow)"></span>💬 写作名言</h2>
+      <div class="quote-text" id="quoteText"></div>
+      <div class="quote-from" id="quoteFrom"></div>
+      <div class="gen-actions">
+        <button class="btn small" onclick="showQuote()">换一句</button>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<!-- ============ Obsidian ============ -->
+<main class="tab-panel" id="tab-obs">
+  <div class="grid">
+
+    <!-- 连接 -->
+    <section class="card span2">
+      <h2><span class="dot" style="background:var(--accent)"></span>📓 Obsidian 库</h2>
+      <div class="obs-status" id="obsStatus">尚未连接 Obsidian 库</div>
+      <div class="obs-actions">
+        <button class="btn primary" onclick="obsPickVault()">📂 选择库文件夹</button>
+        <button class="btn" onclick="obsOpenFolder()">🗂️ 打开库文件夹</button>
+        <button class="btn" onclick="obsScan()">🔄 刷新统计</button>
+        <button class="btn" onclick="obsOpenApp()">🚀 打开 Obsidian</button>
+      </div>
+      <div style="color:var(--muted);font-size:12px;margin-top:10px;line-height:1.8">
+        💡 使用前请先安装并打开过 Obsidian；选择库时选中你的笔记文件夹（装有 <code>.obsidian</code> 的那一层）。
+      </div>
+    </section>
+
+    <!-- 统计 -->
+    <section class="card span2">
+      <h2><span class="dot" style="background:var(--green)"></span>📊 写作统计</h2>
+      <div class="obs-stats">
+        <div class="obs-stat"><b id="obsCount">0</b><span>篇笔记</span></div>
+        <div class="obs-stat"><b id="obsTotal">0</b><span>总字数</span></div>
+        <div class="obs-stat"><b id="obsToday">0</b><span>今日新增</span></div>
+        <div class="obs-stat"><b id="obsStreak">0</b><span>连续写作天数</span></div>
+      </div>
+      <div class="obs-goal">
+        <span class="goal-bar" style="flex:1"><i id="obsGoalBar" style="width:0%"></i></span>
+        <span style="font-size:12px;color:var(--muted)">今日目标 <input class="goal-input" id="obsGoalInput" type="number" value="2000" min="100" step="100"> 字</span>
+      </div>
+      <div class="obs-chart" id="obsChart"></div>
+    </section>
+
+    <!-- 笔记列表 -->
+    <section class="card span2">
+      <h2><span class="dot" style="background:var(--yellow)"></span>📄 笔记文件</h2>
+      <div class="search-row" style="margin-bottom:10px">
+        <input id="obsSearch" type="text" placeholder="搜索笔记（按路径/名称）…" autocomplete="off">
+      </div>
+      <div class="obs-files" id="obsFiles"></div>
+    </section>
+
+    <!-- 快捷工具 -->
+    <section class="card span2">
+      <h2><span class="dot" style="background:var(--red)"></span>🧰 快捷工具</h2>
+      <div class="obs-tools">
+        <div class="tool-row">
+          <input id="obsNewTitle" type="text" placeholder="新笔记标题，例如：第2章 初遇">
+          <button class="btn primary" onclick="obsNewNote()">＋ 在库中新建笔记</button>
+        </div>
+        <textarea id="obsQuickWrite" placeholder="快速记录一段文字…"></textarea>
+        <div class="tool-row">
+          <button class="btn" onclick="obsAppendInsp()">💡 追加到「灵感收集.md」</button>
+          <button class="btn" onclick="obsExportMats()">📦 把素材箱全部导出到 Obsidian</button>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<!-- ============ 网络工具箱 ============ -->
+<main class="tab-panel" id="tab-net">
+  <div class="grid">
+
+    <!-- DNS 加速 -->
+    <section class="card span2">
+      <h2><span class="dot" style="background:var(--accent)"></span>🚀 DNS 加速</h2>
+      <div class="net-tip">自动测出当前网络下最快的 DNS 服务器（解析 www.baidu.com 的耗时）。在系统里改用最快的那个，网页打开速度可能明显提升。</div>
+      <div class="net-actions">
+        <button class="btn primary" onclick="netDnsTest()">🔄 重新测速</button>
+        <button class="btn" onclick="netCopyDns()">📋 复制最优 DNS</button>
+        <button class="btn" onclick="netFlushDns()">🧹 刷新 DNS 缓存</button>
+        <button class="btn" onclick="netOpenNcpa()">⚙️ 打开网络适配器设置</button>
+      </div>
+      <div id="dnsResults" class="net-list"><div class="net-empty">打开本页后自动测速…</div></div>
+      <div class="net-best" id="dnsBest"></div>
+    </section>
+
+    <!-- 常用网站测速 -->
+    <section class="card span2">
+      <h2><span class="dot" style="background:var(--green)"></span>🌐 常用网站测速</h2>
+      <div class="net-actions">
+        <button class="btn primary" onclick="netWebTest()">🔄 重新测速</button>
+      </div>
+      <div id="webResults" class="net-list"><div class="net-empty">打开本页后自动测速…</div></div>
+    </section>
+
+    <!-- 游戏节点 -->
+    <section class="card span2">
+      <h2><span class="dot" style="background:var(--yellow)"></span>🎮 游戏节点延迟</h2>
+      <div class="net-tip">TCP 连接耗时近似延迟，越低越好。测试结果为参考值，不代表游戏内实际体验。</div>
+      <div class="tool-row" style="margin-bottom:10px">
+        <input id="netCustom" type="text" placeholder="自定义节点，如：1.2.3.4:443 或 域名:端口">
+        <button class="btn" onclick="netCustomPing()">测试自定义节点</button>
+      </div>
+      <div class="net-actions">
+        <button class="btn primary" onclick="netGameTest()">🔄 测试全部游戏节点</button>
+      </div>
+      <div id="gameResults" class="net-list"><div class="net-empty">点击按钮开始测试…</div></div>
+    </section>
+
+    <!-- 一键切换最快 DNS 线路 -->
+    <section class="card span2">
+      <h2><span class="dot" style="background:var(--green)"></span>⚡ 一键切换最快线路</h2>
+      <div class="net-tip">一键把系统 DNS 切换为测出的最快线路（需管理员授权，会弹出系统确认框）。切换前自动备份原设置，可随时恢复。</div>
+      <div class="net-actions">
+        <button class="btn primary" onclick="netApplyFastDns()">🚀 测速并一键应用最快 DNS</button>
+        <button class="btn" onclick="netRestoreDns()">↩️ 恢复原 DNS</button>
+        <button class="btn" onclick="netCurrentDns()">📋 查看当前系统 DNS</button>
+      </div>
+      <div id="dnsCurrent" class="net-list"><div class="net-empty">点击「查看当前系统 DNS」显示</div></div>
+      <div class="net-best" id="dnsSwitchStatus"></div>
+    </section>
+
+    <!-- 游戏网络诊断 -->
+    <section class="card span2">
+      <h2><span class="dot" style="background:var(--accent2)"></span>🎮 游戏网络诊断（三角洲等）</h2>
+      <div class="net-tip">按顺序测：先查本地（Wi-Fi/路由器），再查外网，最后测速——找出"网卡"到底卡在哪一环。</div>
+      <div class="net-actions">
+        <button class="btn" onclick="netWifi()">📶 Wi-Fi 信号检测</button>
+        <button class="btn" onclick="netPingGateway()">🏠 路由器延迟/丢包</button>
+        <button class="btn" onclick="netPingOutside()">🚄 外网延迟/丢包</button>
+        <button class="btn primary" onclick="netSpeed()">⬇️ 网速测试</button>
+      </div>
+      <div id="gameDiag" class="net-list"><div class="net-empty">点击按钮开始诊断…</div></div>
+      <div class="net-best" id="gameAdvice"></div>
+    </section>
+
+    <!-- 说明 -->
+    <section class="card">
+      <h2><span class="dot" style="background:var(--red)"></span>💡 使用说明</h2>
+      <div class="net-tip" style="line-height:2">
+        · <b>DNS 加速</b>：测出最快 DNS → 一键应用（推荐）或手动填写。<br>
+        · <b>一键切换</b>会自动选最快的两个 DNS 写入系统，并备份原设置；「恢复原 DNS」可还原。<br>
+        · <b>游戏诊断</b>：Wi-Fi 信号差/路由器丢包/运营商线路波动，是"网卡"三大主因，先测出是哪一环。<br>
+        · 真正的<b>游戏加速器</b>需要商业服务器（如 UU、迅游），本工具负责诊断与本地优化。<br>
+        · 所有测试都在本地进行，<b>不上传任何数据</b>。
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<!-- ============ 性能优化 ============ -->
+<main class="tab-panel" id="tab-perf">
+  <div class="grid">
+
+    <!-- 系统状态 -->
+    <section class="card span2">
+      <h2><span class="dot" style="background:var(--accent)"></span>🖥️ 硬件与系统状态</h2>
+      <div class="net-actions">
+        <button class="btn primary" onclick="perfStatus()">🔄 检测状态</button>
+      </div>
+      <div id="perfSpecs" class="net-list"><div class="net-empty">打开本页后自动检测…</div></div>
+      <div class="net-best" id="perfAdvice"></div>
+    </section>
+
+    <!-- 一键优化 -->
+    <section class="card span2">
+      <h2><span class="dot" style="background:var(--green)"></span>⚡ 一键性能优化</h2>
+      <div class="net-tip">自动执行 4 项安全优化：① 高性能电源计划 ② 关闭游戏录制 Game DVR ③ 关闭全屏优化 ④ 关闭系统动画。所有改动都会备份，可一键还原。</div>
+      <div class="net-actions">
+        <button class="btn primary" onclick="perfApply()">⚡ 一键优化（需管理员授权）</button>
+        <button class="btn" onclick="perfRestore()">↩️ 还原优化</button>
+      </div>
+      <div class="net-best" id="perfStatus"></div>
+    </section>
+
+    <!-- 建议 -->
+    <section class="card">
+      <h2><span class="dot" style="background:var(--yellow)"></span>💡 优化建议</h2>
+      <div id="perfTips" class="net-tip" style="line-height:2">先点击「检测状态」，这里会给出针对性建议。</div>
+    </section>
+
+    <!-- 说明 -->
+    <section class="card">
+      <h2><span class="dot" style="background:var(--red)"></span>📌 说明</h2>
+      <div class="net-tip" style="line-height:2">
+        · 帧率上限由显卡/CPU 决定，本工具负责<b>减少系统拖后腿</b>（录制、动画、电源），通常提升 5-15%。<br>
+        · 关闭 Game DVR 后，Win+G 的游戏录制功能将不可用。<br>
+        · 改动均为系统级设置，可一键还原；部分游戏需重启后生效。
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<!-- ============ API 余额 ============ -->
+<main class="tab-panel" id="tab-api">
+  <div class="grid">
+
+    <!-- 查询 -->
+    <section class="card span2">
+      <h2><span class="dot" style="background:var(--accent)"></span>💰 API 余额查询</h2>
+      <div class="tool-row" style="margin-bottom:10px">
+        <select id="apiProvider" onchange="apiProviderChange()"></select>
+        <input id="apiKey" type="password" placeholder="粘贴 API Key" autocomplete="off">
+        <button class="btn primary" onclick="apiQuery()">🔍 查询余额</button>
+      </div>
+      <div class="net-tip" id="apiNote"></div>
+      <div id="apiResult" class="net-list"><div class="net-empty">选择服务商、填入 API Key，点击查询</div></div>
+    </section>
+
+    <!-- 密钥获取 -->
+    <section class="card">
+      <h2><span class="dot" style="background:var(--yellow)"></span>🔑 如何获取密钥</h2>
+      <div class="net-tip" style="line-height:2" id="apiHelp"></div>
+    </section>
+
+    <!-- 安全 -->
+    <section class="card">
+      <h2><span class="dot" style="background:var(--red)"></span>🔒 安全提示</h2>
+      <div class="net-tip" style="line-height:2">
+        · API Key 只保存在<b>本机</b>，不会上传到任何服务器。<br>
+        · 查询时直接请求各平台的官方接口。<br>
+        · 不要把存有 Key 的软件分享给他人。
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<!-- ============ 磁盘清理 ============ -->
+<main class="tab-panel" id="tab-disk">
+  <div class="grid">
+
+    <!-- 磁盘空间 -->
+    <section class="card span2">
+      <h2><span class="dot" style="background:var(--accent)"></span>💽 磁盘空间总览</h2>
+      <div class="net-actions">
+        <button class="btn primary" onclick="diskScan()">🔄 扫描磁盘与垃圾</button>
+      </div>
+      <div id="diskDrives" class="net-list"><div class="net-empty">打开本页后自动扫描…</div></div>
+    </section>
+
+    <!-- 垃圾清理 -->
+    <section class="card span2">
+      <h2><span class="dot" style="background:var(--green)"></span>🗑️ 垃圾文件清理</h2>
+      <div class="net-tip">勾选要清理的项目（只删缓存/临时文件，不碰你的文档）。清理需要管理员授权。</div>
+      <div id="diskCategories" class="net-list"><div class="net-empty">点击「扫描磁盘与垃圾」查看可清理的项目</div></div>
+      <div class="net-actions" style="margin-top:12px">
+        <button class="btn primary" onclick="diskClean()">🧹 清理选中项（需授权）</button>
+        <button class="btn" onclick="diskCleanMgr()">⚙️ 打开系统磁盘清理</button>
+      </div>
+      <div class="net-best" id="diskCleanStatus"></div>
+    </section>
+
+    <!-- 大文件 -->
+    <section class="card span2">
+      <h2><span class="dot" style="background:var(--yellow)"></span>🔍 大文件查找</h2>
+      <div class="tool-row" style="margin-bottom:10px">
+        <input id="diskFolder" type="text" placeholder="输入文件夹路径，留空则扫描「下载」文件夹">
+        <button class="btn primary" onclick="diskBigFiles()">🔍 扫描大文件（&gt;100MB）</button>
+      </div>
+      <div id="diskBigList" class="net-list"><div class="net-empty">扫描结果会显示在这里，可打开文件所在位置自行处理</div></div>
+    </section>
+
+    <!-- 说明 -->
+    <section class="card">
+      <h2><span class="dot" style="background:var(--red)"></span>📌 说明</h2>
+      <div class="net-tip" style="line-height:2">
+        · 只清理<b>安全的缓存垃圾</b>：临时文件、浏览器缓存、缩略图、更新缓存等。<br>
+        · <b>绝不自动删除</b>你的文档、下载、照片。<br>
+        · 大文件查找只定位，删除与否由你自己决定。<br>
+        · 部分系统目录（Windows 临时、更新缓存）需要管理员权限。
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<footer>我的创作工作站 · 数据保存在本地 · 灵感不止，写作不停 ✍️</footer>
+
+<!-- 添加链接弹窗 -->
+<div class="modal-mask" id="linkModal">
+  <div class="modal">
+    <h3>添加快捷链接</h3>
+    <label>名称</label>
+    <input id="linkName" type="text" placeholder="例如：GitHub">
+    <label>网址</label>
+    <input id="linkUrl" type="text" placeholder="例如：https://github.com">
+    <label>图标（Emoji）</label>
+    <input id="linkIcon" type="text" placeholder="例如：🚀（可留空）">
+    <div class="modal-btns">
+      <button onclick="closeModal()">取消</button>
+      <button class="primary" onclick="saveLink()">保存</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ========== 通用 ========== */
+const store = {
+  get(k, def) { try { const v = localStorage.getItem(k); return v === null ? def : JSON.parse(v); } catch { return def; } },
+  set(k, v) { localStorage.setItem(k, JSON.stringify(v)); }
+};
+const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+const countChars = s => (s || '').replace(/\s/g, '').length;
+const nowHM = () => { const n = new Date(); return `${n.getHours()}:${String(n.getMinutes()).padStart(2,'0')}:${String(n.getSeconds()).padStart(2,'0')}`; };
+
+// 各标签页初始化标志（全部提前声明，避免 switchTab 早期调用时触发 TDZ 错误）
+let netInit = false, netBestDns = null, netDnsResults = [];
+let perfInit = false, apiInit = false;
+
+/* ========== 标签页 ========== */
+function switchTab(name) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
+  ['work', 'write', 'obs', 'net', 'perf', 'api', 'disk'].forEach(t => {
+    document.getElementById('tab-' + t).classList.toggle('active', name === t);
+  });
+  store.set('ws_tab', name);
+  if (name === 'net') netRunInit();
+  if (name === 'perf') perfRunInit();
+  if (name === 'api') apiRunInit();
+  if (name === 'disk') diskRunInit();
+}
+switchTab(store.get('ws_tab', 'work'));
+
+/* ========== 时钟 ========== */
+const WEEK = ['日','一','二','三','四','五','六'];
+function tick() {
+  const n = new Date();
+  const p = x => String(x).padStart(2, '0');
+  document.getElementById('clockTime').textContent = `${p(n.getHours())}:${p(n.getMinutes())}:${p(n.getSeconds())}`;
+  document.getElementById('clockDate').textContent = `${n.getFullYear()}年${n.getMonth()+1}月${n.getDate()}日 星期${WEEK[n.getDay()]}`;
+  const h = n.getHours();
+  let greet = '你好 👋', sub = '欢迎回来，开始今天的工作吧';
+  if (h < 6) { greet = '夜深了 🌙'; sub = '注意休息，别太累'; }
+  else if (h < 9) { greet = '早上好 ☀️'; sub = '新的一天，元气满满'; }
+  else if (h < 12) { greet = '上午好 ✨'; sub = '专注当下，高效工作'; }
+  else if (h < 14) { greet = '中午好 🍜'; sub = '记得按时吃饭'; }
+  else if (h < 18) { greet = '下午好 ⚡'; sub = '继续加油，保持专注'; }
+  else { greet = '晚上好 🌆'; sub = '辛苦了，适当放松一下'; }
+  document.getElementById('greetTitle').textContent = greet;
+  document.getElementById('greetSub').textContent = sub;
+}
+setInterval(tick, 1000); tick();
+
+/* ========== 搜索 ========== */
+const ENGINES = {
+  bing: q => 'https://www.bing.com/search?q=' + encodeURIComponent(q),
+  baidu: q => 'https://www.baidu.com/s?wd=' + encodeURIComponent(q),
+  google: q => 'https://www.google.com/search?q=' + encodeURIComponent(q),
+  duckduckgo: q => 'https://duckduckgo.com/?q=' + encodeURIComponent(q)
+};
+function doSearch() {
+  const q = document.getElementById('searchInput').value.trim();
+  if (!q) return;
+  window.open(ENGINES[document.getElementById('engine').value](q), '_blank');
+}
+document.getElementById('searchInput').addEventListener('keydown', e => { if (e.key === 'Enter') doSearch(); });
+
+/* ========== 快捷链接 ========== */
+const DEFAULT_LINKS = [
+  { name: 'GitHub', url: 'https://github.com', icon: '🐙' },
+  { name: 'B站', url: 'https://www.bilibili.com', icon: '📺' },
+  { name: '知乎', url: 'https://www.zhihu.com', icon: '💡' },
+  { name: '微博', url: 'https://weibo.com', icon: '📰' },
+  { name: '邮箱', url: 'https://mail.qq.com', icon: '✉️' },
+  { name: '翻译', url: 'https://fanyi.baidu.com', icon: '🌐' }
+];
+function renderLinks() {
+  const links = store.get('links', DEFAULT_LINKS);
+  const box = document.getElementById('quickLinks');
+  box.innerHTML = '';
+  links.forEach((l, i) => {
+    const a = document.createElement('a');
+    a.className = 'link-item'; a.href = l.url; a.target = '_blank';
+    a.innerHTML = `<span class="icon">${l.icon || '🔗'}</span><span class="name">${l.name}</span>`;
+    const del = document.createElement('button');
+    del.className = 'del'; del.textContent = '✕';
+    del.onclick = e => { e.preventDefault(); e.stopPropagation(); removeLink(i); };
+    a.appendChild(del);
+    box.appendChild(a);
+  });
+  const add = document.createElement('div');
+  add.className = 'add-link'; add.textContent = '＋'; add.title = '添加链接';
+  add.onclick = openModal;
+  box.appendChild(add);
+}
+function removeLink(i) {
+  const links = store.get('links', DEFAULT_LINKS);
+  links.splice(i, 1); store.set('links', links); renderLinks();
+}
+function openModal() { document.getElementById('linkModal').classList.add('show'); document.getElementById('linkName').focus(); }
+function closeModal() { document.getElementById('linkModal').classList.remove('show'); }
+function saveLink() {
+  const name = document.getElementById('linkName').value.trim();
+  let url = document.getElementById('linkUrl').value.trim();
+  const icon = document.getElementById('linkIcon').value.trim();
+  if (!name || !url) return;
+  if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+  const links = store.get('links', DEFAULT_LINKS);
+  links.push({ name, url, icon });
+  store.set('links', links);
+  ['linkName','linkUrl','linkIcon'].forEach(i => document.getElementById(i).value = '');
+  closeModal(); renderLinks();
+}
+document.getElementById('linkModal').addEventListener('click', e => { if (e.target.id === 'linkModal') closeModal(); });
+renderLinks();
+
+/* ========== 待办 ========== */
+function renderTodos() {
+  const todos = store.get('todos', []);
+  const ul = document.getElementById('todoList');
+  ul.innerHTML = '';
+  todos.forEach((t, i) => {
+    const li = document.createElement('li');
+    if (t.done) li.classList.add('done');
+    li.innerHTML = `<input type="checkbox" ${t.done ? 'checked' : ''}><span></span><button class="del">✕</button>`;
+    li.querySelector('span').textContent = t.text;
+    li.querySelector('input').onchange = e => { t.done = e.target.checked; store.set('todos', todos); renderTodos(); };
+    li.querySelector('.del').onclick = () => { todos.splice(i, 1); store.set('todos', todos); renderTodos(); };
+    ul.appendChild(li);
+  });
+  const left = todos.filter(t => !t.done).length;
+  document.getElementById('todoCount').textContent = todos.length ? `共 ${todos.length} 项 · 未完成 ${left} 项` : '暂无任务，添加一个吧';
+}
+function addTodo() {
+  const input = document.getElementById('todoInput');
+  const text = input.value.trim();
+  if (!text) return;
+  const todos = store.get('todos', []);
+  todos.push({ text, done: false });
+  store.set('todos', todos);
+  input.value = ''; renderTodos();
+}
+document.getElementById('todoInput').addEventListener('keydown', e => { if (e.key === 'Enter') addTodo(); });
+renderTodos();
+
+/* ========== 记事本 ========== */
+const notesArea = document.getElementById('notesArea');
+notesArea.value = store.get('notes', '');
+let notesTimer = null;
+notesArea.addEventListener('input', () => {
+  clearTimeout(notesTimer);
+  notesTimer = setTimeout(() => {
+    store.set('notes', notesArea.value);
+    document.getElementById('notesMeta').textContent = `已保存 · ${nowHM()}`;
+  }, 500);
+});
+
+/* ========== 番茄钟 ========== */
+const POMO = { work: 25 * 60, short: 5 * 60, long: 15 * 60 };
+let pomoMode = 'work', pomoLeft = POMO.work, pomoRunning = false, pomoTimer = null, pomoRound = 0;
+const pomoEl = document.getElementById('pomoDisplay');
+function pomoFmt(s) { return `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`; }
+function pomoRender() {
+  pomoEl.textContent = pomoFmt(pomoLeft);
+  const names = { work: '专注', short: '短休息', long: '长休息' };
+  document.getElementById('pomoMode').textContent = `${names[pomoMode]} ${pomoFmt(pomoLeft)}`;
+}
+function pomoToggle() {
+  pomoRunning = !pomoRunning;
+  document.getElementById('pomoStart').textContent = pomoRunning ? '暂停' : '继续';
+  if (pomoRunning) {
+    pomoTimer = setInterval(() => {
+      pomoLeft--;
+      if (pomoLeft <= 0) pomoFinish();
+      pomoRender();
+    }, 1000);
+  } else clearInterval(pomoTimer);
+  pomoRender();
+}
+function pomoFinish() {
+  clearInterval(pomoTimer); pomoRunning = false;
+  document.getElementById('pomoStart').textContent = '开始';
+  if (pomoMode === 'work') {
+    pomoRound++;
+    pomoMode = (pomoRound % 4 === 0) ? 'long' : 'short';
+  } else pomoMode = 'work';
+  pomoLeft = POMO[pomoMode]; pomoRender();
+}
+function pomoReset() {
+  clearInterval(pomoTimer); pomoRunning = false;
+  document.getElementById('pomoStart').textContent = '开始';
+  pomoLeft = POMO[pomoMode]; pomoRender();
+}
+function pomoSkip() {
+  clearInterval(pomoTimer); pomoRunning = false;
+  document.getElementById('pomoStart').textContent = '开始';
+  if (pomoMode === 'work') { pomoRound++; pomoMode = (pomoRound % 4 === 0) ? 'long' : 'short'; }
+  else pomoMode = 'work';
+  pomoLeft = POMO[pomoMode]; pomoRender();
+}
+pomoRender();
+
+/* ========== 天气 ========== */
+const GEO_URL = 'https://geocoding-api.open-meteo.com/v1/search?count=1&language=zh&name=';
+const WX_URL = 'https://api.open-meteo.com/v1/forecast?current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=auto';
+const WX_CODES = {
+  0:'☀️ 晴',1:'🌤️ 基本晴朗',2:'⛅ 局部多云',3:'☁️ 阴',45:'🌫️ 雾',48:'🌫️ 雾凇',
+  51:'🌦️ 毛毛雨',53:'🌦️ 毛毛雨',55:'🌧️ 毛毛雨',56:'🌧️ 冻毛毛雨',57:'🌧️ 冻毛毛雨',
+  61:'🌧️ 小雨',63:'🌧️ 中雨',65:'🌧️ 大雨',66:'🌧️ 冻雨',67:'🌧️ 冻雨',
+  71:'🌨️ 小雪',73:'🌨️ 中雪',75:'❄️ 大雪',77:'🌨️ 雪粒',
+  80:'🌦️ 阵雨',81:'🌦️ 阵雨',82:'⛈️ 强阵雨',85:'🌨️ 阵雪',86:'❄️ 强阵雪',
+  95:'⛈️ 雷阵雨',96:'⛈️ 雷阵雨伴冰雹',99:'⛈️ 强雷暴伴冰雹'
+};
+async function loadWeather() {
+  const city = document.getElementById('cityInput').value.trim() || store.get('city', '北京');
+  document.getElementById('cityInput').value = city;
+  const main = document.getElementById('weatherMain');
+  const mini = document.getElementById('weatherMini');
+  main.innerHTML = '<div class="weather-desc">查询中…</div>'; mini.textContent = '';
+  try {
+    const g = await (await fetch(GEO_URL + encodeURIComponent(city))).json();
+    const loc = g.results && g.results[0];
+    if (!loc) { main.innerHTML = '<div class="weather-desc">未找到该城市</div>'; return; }
+    store.set('city', city);
+    const w = await (await fetch(`${WX_URL}&latitude=${loc.latitude}&longitude=${loc.longitude}`)).json();
+    const c = w.current;
+    main.innerHTML = `
+      <div style="font-size:26px">${WX_CODES[c.weather_code] ? WX_CODES[c.weather_code].split(' ')[0] : '🌡️'}</div>
+      <div class="weather-temp">${Math.round(c.temperature_2m)}°C</div>
+      <div class="weather-desc">${loc.name}${loc.country ? ' · ' + loc.country : ''} ${WX_CODES[c.weather_code] ? WX_CODES[c.weather_code].split(' ')[1] : ''}</div>`;
+    mini.innerHTML = `体感 ${Math.round(c.apparent_temperature)}°C · 湿度 ${c.relative_humidity_2m}% · 风速 ${Math.round(c.wind_speed_10m)} km/h<br>今日 ${Math.round(w.daily.temperature_2m_max[0])}° / ${Math.round(w.daily.temperature_2m_min[0])}°`;
+  } catch { main.innerHTML = '<div class="weather-desc">查询失败，请检查网络</div>'; }
+}
+document.getElementById('cityInput').addEventListener('keydown', e => { if (e.key === 'Enter') loadWeather(); });
+loadWeather();
+
+/* ========== 写作工坊：灵感发生器 ========== */
+const INSP = {
+  plot: [
+    '主角收到了十年后自己寄来的一封信，信上只有一句话：「千万别在今晚十二点打开那扇门。」',
+    '学校图书馆的某一本书，每次借阅记录上写的都是主角自己的名字，但主角从未借过那本书。',
+    '转学第一天，全班同学都在等他，仿佛早就认识他。',
+    '主角发现自己每晚的梦，都是第二天新闻里报道的真实案件。',
+    '一部没人接听的手机，却每天都在凌晨三点响起闹钟。',
+    '主角捡到一本日记，日记主人声称自己是主角的分身。',
+    '全世界突然只有主角记得某个已故同学的存在。',
+    '主角考试时发现试卷上的答案，正是自己还没写出来的想法。',
+    '新来的老师认识全班每一个人，除了主角。',
+    '主角在旧书包夹层里发现一张火车票，日期是明天。',
+    '班级合影里，多了一个从未见过的同学。',
+    '主角拥有能看见别人头顶「结局」的能力，却看不见自己的。',
+    '半夜十二点，宿舍楼下有人喊主角的名字，但那声音是主角自己的。',
+    '主角写的小说里，反派第二天出现在现实，并且认识主角。',
+    '主角发现学校广播每次播报的内容，都恰好是主角刚刚想的事。',
+    '主角在旧书里夹到一张电影票根，检票时间是今晚，放映的是主角还没写完的故事。',
+    '便利店深夜的收银员，每次都能预知主角要买什么，包括主角自己还没决定的事。',
+    '主角的手机里多了一个通讯录联系人，备注是「未来的我」，号码能打通。'
+  ],
+  char: [
+    '表面温柔体贴的班长，其实在收集全班同学的秘密。',
+    '从不说话的转学生，书包里装着一把旧钥匙。',
+    '全校最受欢迎的学霸，每晚偷偷给流浪猫喂食。',
+    '爱讲冷笑话的体育委员，笑的时候眼睛里没有光。',
+    '总考倒数第一的男生，其实智商超群，只是故意藏拙。',
+    '美术课代表画的所有画，主角都出现在背景里。',
+    '严厉的班主任，办公桌抽屉里锁着主角母亲的照片。',
+    '值日生每次都抢着擦黑板，因为黑板后面藏了东西。',
+    '图书馆管理员记得每位读者借过的书，唯独忘了自己。',
+    '校门口卖糖葫芦的老爷爷，卖的不是糖葫芦是消息。',
+    '宿舍里最沉默的室友，枕头下压着一张写满名字的名单。',
+    '看起来最和善的食堂阿姨，认识每一位学生的父母。',
+    '总在教室最后一排睡觉的男生，醒来时总能说出老师讲错的题。',
+    '每次运动会都请假的女生，其实躲在天台做一件大事。'
+  ],
+  scene: [
+    '建校百年、传言地下埋着旧校址的中学。',
+    '位于海边的寄宿学校，涨潮时图书馆会消失一扇窗户。',
+    '大雪封山的小镇，唯一的出口在每晚十点关闭。',
+    '城市最老的书店，地下有一层地图上找不到的房间。',
+    '开在废弃火车站旁的咖啡馆，火车从未停过站。',
+    '每到满月，湖面会浮出一座桥的学校后山。',
+    '全校只有一台老电梯的旧教学楼，六楼按下去总是到七楼。',
+    '镇上的钟楼在午夜十二点会敲十三下。',
+    '建在悬崖边的灯塔学校，灯塔的光照不到海面。',
+    '种满银杏的校园，每到秋天落叶会拼出文字。',
+    '位于老城区尽头的旧影院，每天只放映同一部无人看过的电影。',
+    '火车站台尽头的候车室，只有错过末班车的人才能看见。'
+  ],
+  conflict: [
+    '最好的朋友成了竞争对手，且不择手段。',
+    '家庭期望与个人梦想之间的拉锯。',
+    '为了保护重要的人，不得不伤害另一个人。',
+    '知道真相的代价是失去现在的平静生活。',
+    '曾经崇拜的人，露出了真面目。',
+    '两个阵营都有道理，主角必须选边。',
+    '达成目标的前提是放弃最珍贵的东西。',
+    '被最信任的人背叛，却还要靠他活下去。',
+    '承诺过的事情，与现实完全相反。',
+    '主角拥有能力，却不知该用它救人还是自保。',
+    '为了守住一个秘密，要说一百个谎。',
+    '所有人都劝主角放弃，只有主角自己不肯。'
+  ],
+  twist: [
+    '主角要找的人，就是他自己。',
+    '一直帮助主角的「神秘人」，其实是主角自己写的角色。',
+    '时间不是线性的，主角的记忆顺序是乱的。',
+    '反派的目标其实是保护主角。',
+    '主角以为自己在拯救世界，其实世界在拯救他。',
+    '故事开头就死掉的角色，才是真正的叙述者。',
+    '主角的能力，来自他从未谋面的父亲。',
+    '全校师生都活着，除了主角自己。',
+    '反派其实是主角未来的自己，来阻止一场灾难。',
+    '主角一直逃避的，正是他想要的。',
+    '主角拼尽全力守护的人，才是这场阴谋的策划者。',
+    '主角以为自己在做梦，其实梦里的世界才是真的。'
+  ],
+  theme: [
+    '成长就是学会和遗憾共处。',
+    '真相有时比谎言更伤人。',
+    '平凡的日子，才是最珍贵的奇迹。',
+    '选择本身，比结果更能定义一个人。',
+    '孤独不是没有人，而是没有人懂。',
+    '勇气不是不害怕，而是害怕也要往前走。',
+    '每个人都在用自己的方式，守护着什么。',
+    '有些告别，是为了更好的重逢。',
+    '世界不会为你停下，但你可以在自己的节奏里奔跑。',
+    '最深的黑暗里，也有人举着灯。'
+  ]
+};
+const INSP_LABEL = { plot: '剧情', char: '人物', scene: '场景', conflict: '冲突', twist: '反转', theme: '主题' };
+const COLLIDE = ['雨夜','旧日记','天台','一封信','镜子','时钟','钥匙','图书馆','烟花','风筝','影子','铃声','糖果','地图','星空','废墟','车站','一把伞','照片','回声','纸条','灯塔','银杏','钟楼','倒影','流星','纸船','秘密','歌声','月光','空教室','旧校服','电话亭','漂流瓶','萤火虫','跑道'];
+
+let inspCat = 'all', lastInsp = '';
+function setInspCat(cat) {
+  inspCat = cat;
+  document.querySelectorAll('#inspCats .chip').forEach(c => c.classList.toggle('active', c.dataset.cat === cat));
+}
+document.querySelectorAll('#inspCats .chip').forEach(c => c.onclick = () => setInspCat(c.dataset.cat));
+
+function genInspiration() {
+  const keys = inspCat === 'all' ? Object.keys(INSP) : [inspCat];
+  const key = pick(keys);
+  const txt = pick(INSP[key]);
+  lastInsp = `【${INSP_LABEL[key]}】${txt}`;
+  document.getElementById('inspOutput').textContent = lastInsp;
+}
+function genCombo() {
+  const parts = [];
+  parts.push(`主角在${pick(INSP.scene)}，`);
+  parts.push(`目标是${pick(['找到真相', '保护一个人', '证明自己', '回到过去', '活下去', '解开谜团'])},`);
+  parts.push(`却遇到${pick(INSP.conflict)}。`);
+  parts.push(`最后反转：${pick(INSP.twist)}`);
+  lastInsp = '🔀 故事组合：' + parts.join(' ');
+  document.getElementById('inspOutput').textContent = lastInsp;
+}
+function genCollide() {
+  const a = pick(COLLIDE), b = pick(COLLIDE);
+  lastInsp = `⚡ ${a} × ${b} —— 试着把这两个词放进同一个场景里`;
+  document.getElementById('inspOutput').textContent = lastInsp;
+}
+function favInsp() {
+  const txt = document.getElementById('inspOutput').textContent;
+  if (txt.includes('点上面的按钮')) return;
+  addMatRaw(txt, '灵感');
+}
+genInspiration();
+
+/* ========== 写作提示 ========== */
+const PROMPTS = {
+  '校园': [
+    '以「班主任在讲台上点名，点到我的名字时，全班都看向了我」为开头，写一个故事。',
+    '写一个场景：自习课上，前排同学传给你一张纸条，上面只有三个字：「别回头」。',
+    '毕业前的最后一个晚自习，你在课桌抽屉里发现了一本不属于你的日记。',
+    '主角是班长，考试前收到一条匿名短信：「这次月考，有人要陷害你。」',
+    '以「奖学金名单公布那天，我的朋友和我的成绩恰好换了个位置」开头。',
+    '运动会接力赛前夜，主力队员突然退赛，主角被临时顶上。',
+    '写一个场景：午休的教室，只有你和走廊尽头站着的那个黑影。',
+    '以「转学第一天，我成了全班同学都在等的那个座位的主人」为开头。'
+  ],
+  '奇幻': [
+    '主角在旧书摊买到的魔法书，只有午夜才能打开。',
+    '写一个设定：魔法需要消耗记忆才能施放，越强大的法术忘掉的东西越多。',
+    '主角是御剑门最后一名弟子，但宗门已三年没人来过。',
+    '穿越到修仙世界，却发现这里的规则是「越努力越危险」。',
+    '写一个场景：主角的剑在月圆之夜会说话，只警告他别去某个地方。',
+    '主角捡到一面古镜，镜中人是主角未来的自己，却被封印了。',
+    '以「师父说，天下没有免费的午餐，但真的有」为开头。',
+    '写一个设定：这座城每十年就会忘记一个人，而主角记得所有人。'
+  ],
+  '科幻': [
+    '在人均寿命 200 年的时代，主角是少数活不过 30 岁的人。',
+    '写一个设定：记忆可以交易，穷人靠卖记忆为生。',
+    '主角是机器人，却在一场事故中获得了「做梦」的能力。',
+    '人类移民火星后的第三代，第一次看到真实的蓝天。',
+    '写一个场景：主角收到一条来自 100 年后的求救信息，署名是自己的女儿。',
+    '全球断电十分钟，只有主角的手机还有一格信号。',
+    '以「人类终于造出了能预知未来的机器，第一个问题却是：它自己会消失吗」为开头。',
+    '写一个设定：天上所有的星星，其实都是地球的镜子。'
+  ],
+  '悬疑': [
+    '主角收到一封没有寄件人的信，信里是一张自己十年前的照片，但照片上的主角背后站着一个人。',
+    '写一个设定：小镇每年失踪一个人，失踪者都会留下一张拍立得。',
+    '主角是法医，发现死者手机里的最后一通电话，是打给自己的。',
+    '学校后山发现旧物，里面有主角儿时的玩具。',
+    '写一个场景：主角醒来，发现房间的布置和昨晚睡前完全不同。',
+    '主角的邻居每晚十一点准时出门，从不带伞，即便下暴雨。',
+    '以「警报解除后，人们才发现被困在里面的，不止人」为开头。',
+    '写一个设定：这座城市没有监控，也没有小偷。'
+  ],
+  '都市': [
+    '主角加班到深夜，写字楼下的大排档老板总能知道主角今天的心情。',
+    '写一个场景：主角在地铁里偶遇多年未见的朋友，对方假装不认识。',
+    '主角搬进新租的房子，发现衣柜后有一扇封死的门。',
+    '以「三十岁生日那天，主角辞职了」为开头。',
+    '主角每天都坐同一班公交，直到有一天司机换人，路线也变了。',
+    '写一个场景：深夜便利店，一个陌生人买了两瓶水，把一瓶放在主角面前。',
+    '以「这座城市每天都在变，只有巷口的馄饨摊没变」为开头。',
+    '写一个场景：主角在阳台晒被子时，听见隔壁传来的钢琴声。'
+  ],
+  '武侠': [
+    '主角是镖局最年轻的镖师，接了一趟没人敢接的镖。',
+    '写一个设定：江湖传言，集齐七枚铜钱可号令天下，但没人知道铜钱长什么样。',
+    '主角的师父临终前只说了一句：「别去华山。」',
+    '以「主角的剑，是仇人的剑」为开头。',
+    '写一个场景：客栈打烊后，掌柜从柜台下取出自己的刀。',
+    '主角是武林第一剑客，却不会握剑——因为他是替身。',
+    '以「江湖人称快刀客，快刀客从不快，他快的是心」为开头。',
+    '写一个设定：这里的武林盟主，每一任都是前任的仇人。'
+  ],
+  '恋爱': [
+    '以「我们约好毕业就在一起，可他提前一年出国了」为开头。',
+    '写一个场景：下雨天，主角把伞让给暗恋的人，自己淋雨走回家。',
+    '主角和死对头被困在同一间教室，窗外电闪雷鸣。',
+    '以「他每天给我带早餐，持续了三百天，我以为是习惯」为开头。',
+    '写一个场景：主角在旧书店看到小时候和青梅竹马一起画的画。',
+    '以「分手三年后，我在超市听到有人喊我的名字」为开头。',
+    '写一个场景：晚自习停电的瞬间，有人轻轻握住了主角的手。',
+    '以「我们都在等对方先开口，结果等来了毕业」为开头。'
+  ],
+  '历史': [
+    '主角是史官，记录一场注定失败的战争。',
+    '写一个设定：长安城里的更夫，其实是前朝皇子。',
+    '以「圣旨到——」为开头，写主角接旨那一刻的心情。',
+    '写一个场景：科举放榜日，主角在榜单前站了很久。',
+    '主角是驿站小吏，迎来送往，直到有一天送来一位亡命之人。',
+    '写一个设定：一把古琴，琴弦断一根，天下就少一位能人。',
+    '以「将军凯旋那日，城门口没有一个人迎接」为开头。',
+    '写一个场景：新帝登基，旧臣献上太傅的遗书。'
+  ]
+};
+let promptGenre = '校园';
+function renderPromptGenres() {
+  const box = document.getElementById('promptGenres');
+  box.innerHTML = '';
+  Object.keys(PROMPTS).forEach(g => {
+    const s = document.createElement('span');
+    s.className = 'chip' + (g === promptGenre ? ' active' : '');
+    s.textContent = g;
+    s.onclick = () => { promptGenre = g; renderPromptGenres(); genPrompt(); };
+    box.appendChild(s);
+  });
+}
+function genPrompt() {
+  document.getElementById('promptOutput').textContent = `【${promptGenre}】${pick(PROMPTS[promptGenre])}`;
+}
+function favPrompt() {
+  const txt = document.getElementById('promptOutput').textContent;
+  if (!txt.includes('选一个类型')) addMatRaw(txt, '灵感');
+}
+renderPromptGenres(); genPrompt();
+
+/* ========== 角色生成器 ========== */
+const SURNAMES = ['林','苏','顾','沈','江','叶','秦','陆','白','宋','韩','许','周','李','陈','王','赵','钱','孙','吴','郑','冯','楚','萧','温','夏','洛','时','程','纪','孟','柳','唐','贺','傅','黎','魏','谢','何','齐'];
+const GIVEN_M = ['之远','亦辰','子墨','书白','承宇','聿修','泽言','星河','云舟','砚清','南风','临川','既明','望舒','见深','牧野','长风','归鹤','听澜','无咎','知远','行舟','沉舟','照野','惊澜'];
+const GIVEN_F = ['清欢','若曦','语嫣','疏影','云锦','拾光','未晚','南絮','知夏','晚晴','初雪','寻真','念安','语桐','微澜','素心','秋棠','锦瑟','半夏','亦瑶','知意','听雨','晓梦','栖迟','未晞'];
+const PERSONALITY = ['冷静腹黑','温柔迟钝','傲娇毒舌','阳光直率','敏感多思','沉默寡言','外冷内热','天真烂漫','雷厉风行','优柔寡断','幽默风趣','固执倔强','胆小怕事','大大咧咧','心思缜密','元气满满'];
+const APPEAR = ['细长的丹凤眼','单眼皮','高马尾','微卷的短发','左耳戴一枚银钉','眉间有颗小痣','笑起来有虎牙','指节分明','眼角微微下垂','皮肤很白','常穿黑色卫衣','手上总有创可贴','戴圆框眼镜','发尾微黄','走路带风','总低头看手机'];
+const HOBBY = ['写日记','收集旧车票','深夜听电台','养多肉','画速写','修旧物','打游戏但手残','看悬疑片','收藏橡皮','天台发呆','折纸船','观察路人','抄歌词','收集树叶书签','做手账','跑步'];
+const WEAKNESS = ['怕黑','晕血','路痴','容易心软','不敢坐过山车','对甜食毫无抵抗力','怕蟑螂','不会拒绝别人','记性差','一紧张就结巴','怕打雷','恐高','爱逞强','失眠','晕车','忘性大'];
+const SECRET = ['偷偷写小说','藏着父母的旧信','暗恋同桌','曾离家出走','在便利店打工','害怕人群','会弹钢琴但从不承认','有一个双胞胎兄弟','深夜会去喂流浪猫','保存着所有旧考试卷','在攒钱去远方','给电台投稿','怕黑却假装不怕','记得每个同学的生日'];
+const GOAL = ['考上理想的大学','找到失踪多年的亲人','学会一项乐器','赚到第一桶金','和喜欢的人告白','离开这座小城','证明自己','保护重要的人','弄清某个真相','写一本书','当一名医生','找到亲生父母','赢一场比赛','养一只猫'];
+const BG = ['单亲家庭长大','小镇出身','被爷爷带大','城市里的小透明','转学生','重组家庭','农村娃进城','出身书香门第','父母常年不在家','由姑姑抚养','孤儿院出身','军人家庭','教师家庭','家境优渥但孤独','住在城中村','刚搬来这座城市'];
+
+let curChar = null;
+function genCharacter() {
+  const male = Math.random() < 0.5;
+  const name = pick(SURNAMES) + pick(male ? GIVEN_M : GIVEN_F);
+  curChar = {
+    name,
+    gender: male ? '男' : '女',
+    age: 14 + Math.floor(Math.random() * 12),
+    personality: pick(PERSONALITY),
+    appear: pick(APPEAR),
+    hobby: pick(HOBBY),
+    weakness: pick(WEAKNESS),
+    secret: pick(SECRET),
+    goal: pick(GOAL),
+    bg: pick(BG)
+  };
+  document.getElementById('charGenName').innerHTML = `<span style="font-size:22px;font-weight:700">${name}</span> <span style="color:var(--muted);font-size:13px">${curChar.gender} · ${curChar.age}岁</span>`;
+  document.getElementById('charGenFields').innerHTML = `
+    <div><b>性格</b>${curChar.personality}</div>
+    <div><b>外貌</b>${curChar.appear}</div>
+    <div><b>爱好</b>${curChar.hobby}</div>
+    <div><b>弱点</b>${curChar.weakness}</div>
+    <div class="wide"><b>秘密</b>${curChar.secret}</div>
+    <div class="wide"><b>目标</b>${curChar.goal}</div>
+    <div class="wide"><b>背景</b>${curChar.bg}</div>`;
+}
+function saveCharFromGen() {
+  if (!curChar) return genCharacter();
+  const c = store.get('ws_chars', []);
+  c.push({
+    id: Date.now(),
+    name: curChar.name,
+    tag: `${curChar.gender} · ${curChar.age}岁 · ${curChar.personality}`,
+    detail: `性格：${curChar.personality}\n外貌：${curChar.appear}\n爱好：${curChar.hobby}\n弱点：${curChar.weakness}\n秘密：${curChar.secret}\n目标：${curChar.goal}\n背景：${curChar.bg}`
+  });
+  store.set('ws_chars', c);
+  renderChars();
+  addMatRaw(`角色「${curChar.name}」：${curChar.personality}，秘密是${curChar.secret}`, '人物');
+  switchTab('write');
+}
+genCharacter();
+
+/* ========== 名字生成器 ========== */
+let nameType = 'char';
+const NAME_PRE = ['云水','青崖','暮色','落星','风陵','雾隐','白沙','月牙','桃花','长明','半山','听雨','望海','孤竹','千灯','远山','苍梧','白鹭','浮云','青石','星河','临风','拾光','长歌','听雪','见山'];
+const NAME_SUF = ['镇','城','港','村','渡','山','洲','湾','坞','巷','书院','轩','寺','里','坊','关','驿','郡','府','台'];
+const SECT_PRE = ['青云','听雪','幽冥','天机','焚香','断水','明月','七杀','百花','玄机','快意','守夜','无相','归剑','藏锋','惊鸿','寒山','观星','流云','青莲'];
+const SECT_SUF = ['门','楼','谷','阁','教','山庄','宗','殿','派','堂','盟','会','宫','院','帮','社'];
+const MAGIC = ['萤火之辉','时光倒流','静默之墙','记忆锁','风之低语','影分身','星光护盾','遗忘之水','真言之眼','万物复苏','时间沙漏','愿望回声','回声之镜','梦中之门','无声之铃','永恒之尘'];
+const NAMES = {
+  char: () => pick(SURNAMES) + pick([...GIVEN_M, ...GIVEN_F]),
+  book: () => pick(['星河入梦','晚风知我意','灯火旧巷','山海之间','拾光簿','少年与海','长安小夜曲','风起时','纸上长安','半夏微凉','此间少年','月光邮局','山月不知','南风知意','时间的褶皱','候鸟与海','雾中来信','未寄出的信','星落长街','远方的钟声']),
+  place: () => pick(NAME_PRE) + pick(NAME_SUF),
+  sect: () => pick(SECT_PRE) + pick(SECT_SUF),
+  magic: () => pick(MAGIC)
+};
+function setNameType(t) {
+  nameType = t;
+  document.querySelectorAll('#nameTypes .chip').forEach(c => c.classList.toggle('active', c.dataset.nt === t));
+}
+document.querySelectorAll('#nameTypes .chip').forEach(c => c.onclick = () => setNameType(c.dataset.nt));
+function genName() {
+  document.getElementById('nameOutput').textContent = '『' + NAMES[nameType]() + '』';
+}
+function favName() {
+  const txt = document.getElementById('nameOutput').textContent;
+  if (txt.includes('选择一个类型')) return;
+  const tags = { char: '人物', book: '灵感', place: '场景', sect: '人物', magic: '灵感' };
+  addMatRaw(txt, tags[nameType]);
+}
+genName();
+
+/* ========== 素材收集箱 ========== */
+let matFilter = '全部';
+const MAT_TAGS = ['全部','灵感','人物','剧情','场景','金句','其他'];
+function renderMatFilters() {
+  const box = document.getElementById('matFilters');
+  box.innerHTML = '';
+  MAT_TAGS.forEach(t => {
+    const s = document.createElement('span');
+    s.className = 'chip' + (t === matFilter ? ' active' : '');
+    s.textContent = t;
+    s.onclick = () => { matFilter = t; renderMatFilters(); renderMatList(); };
+    box.appendChild(s);
+  });
+}
+function renderMatList() {
+  const mats = store.get('ws_mats', []);
+  const box = document.getElementById('matList');
+  const list = matFilter === '全部' ? mats : mats.filter(m => m.tag === matFilter);
+  box.innerHTML = '';
+  if (!list.length) { box.innerHTML = '<div class="mat-empty">📭 还没有素材，看到好点子就收藏进来吧</div>'; return; }
+  list.forEach(m => {
+    const realIdx = mats.indexOf(m);
+    const d = document.createElement('div');
+    d.className = 'mat-item';
+    d.innerHTML = `<span class="mat-tag">${m.tag}</span><span>${m.text}</span><button class="mat-del">✕</button>`;
+    d.querySelector('.mat-del').onclick = () => { mats.splice(realIdx, 1); store.set('ws_mats', mats); renderMatList(); };
+    box.appendChild(d);
+  });
+}
+function addMat() {
+  const text = document.getElementById('matInput').value.trim();
+  if (!text) return;
+  addMatRaw(text, document.getElementById('matTag').value);
+  document.getElementById('matInput').value = '';
+}
+function addMatRaw(text, tag) {
+  const mats = store.get('ws_mats', []);
+  mats.unshift({ id: Date.now(), text, tag, time: new Date().toLocaleString() });
+  store.set('ws_mats', mats);
+  renderMatList();
+}
+renderMatFilters(); renderMatList();
+
+/* ========== 人设卡 ========== */
+function renderChars() {
+  const chars = store.get('ws_chars', []);
+  const box = document.getElementById('charList');
+  box.innerHTML = '';
+  if (!chars.length) { box.innerHTML = '<div class="mat-empty">👤 还没有人设卡，用角色生成器生成一个吧</div>'; return; }
+  chars.forEach((c, i) => {
+    const d = document.createElement('div');
+    d.className = 'char-card';
+    d.innerHTML = `<button class="char-del" title="删除">✕</button><div class="char-name">${c.name}</div><div class="char-tag">${c.tag || ''}</div><div class="char-detail">${c.detail || ''}</div>`;
+    d.querySelector('.char-del').onclick = e => {
+      e.stopPropagation();
+      const arr = store.get('ws_chars', []);
+      arr.splice(i, 1); store.set('ws_chars', arr); renderChars();
+    };
+    d.onclick = () => d.classList.toggle('open');
+    box.appendChild(d);
+  });
+}
+function addCharManual() {
+  const name = document.getElementById('charNameInput').value.trim();
+  if (!name) return;
+  const tag = document.getElementById('charTagInput').value.trim();
+  const chars = store.get('ws_chars', []);
+  chars.push({ id: Date.now(), name, tag, detail: '' });
+  store.set('ws_chars', chars);
+  document.getElementById('charNameInput').value = '';
+  document.getElementById('charTagInput').value = '';
+  renderChars();
+}
+renderChars();
+
+/* ========== 写作区 ========== */
+function loadChapters() {
+  const chs = store.get('ws_chapters', null);
+  if (chs && chs.length) return chs;
+  return [{ id: Date.now(), title: '第一章', content: '' }];
+}
+let chapters = loadChapters();
+let curChapId = store.get('ws_cur', chapters[0].id);
+let writeTimer = null;
+
+function todayStr() { return new Date().toISOString().slice(0, 10); }
+
+function renderChapters() {
+  const side = document.getElementById('chapterSide');
+  side.innerHTML = '';
+  chapters.forEach(c => {
+    const d = document.createElement('div');
+    d.className = 'chap' + (c.id === curChapId ? ' active' : '');
+    d.innerHTML = `<span>${c.title || '未命名'}</span><button class="cdel">✕</button>`;
+    d.onclick = () => selectChapter(c.id);
+    d.querySelector('.cdel').onclick = e => {
+      e.stopPropagation();
+      if (chapters.length <= 1) return;
+      chapters = chapters.filter(x => x.id !== c.id);
+      if (curChapId === c.id) curChapId = chapters[0].id;
+      store.set('ws_chapters', chapters); store.set('ws_cur', curChapId);
+      renderChapters(); loadCurrent(); updateStats();
+    };
+    side.appendChild(d);
+  });
+  const add = document.createElement('div');
+  add.className = 'chapadd'; add.textContent = '＋ 新章节';
+  add.onclick = () => {
+    chapters.push({ id: Date.now(), title: `第${chapters.length + 1}章`, content: '' });
+    curChapId = chapters[chapters.length - 1].id;
+    store.set('ws_chapters', chapters); store.set('ws_cur', curChapId);
+    renderChapters(); loadCurrent(); updateStats();
+  };
+  side.appendChild(add);
+}
+function currentChap() { return chapters.find(c => c.id === curChapId) || chapters[0]; }
+function selectChapter(id) {
+  curChapId = id; store.set('ws_cur', curChapId);
+  renderChapters(); loadCurrent();
+}
+function loadCurrent() {
+  const c = currentChap();
+  document.getElementById('chapTitle').value = c.title;
+  document.getElementById('writeArea').value = c.content;
+  updateStats();
+}
+function saveCurrent() {
+  const c = currentChap();
+  c.title = document.getElementById('chapTitle').value.trim() || '未命名';
+  c.content = document.getElementById('writeArea').value;
+  store.set('ws_chapters', chapters);
+  updateStats();
+}
+function updateStats() {
+  const total = chapters.reduce((s, c) => s + countChars(c.content), 0);
+  const cur = countChars(currentChap().content);
+  document.getElementById('statChap').textContent = cur;
+  document.getElementById('statTotal').textContent = total;
+  const today = todayStr();
+  const log = store.get('ws_log', {});
+  let written = 0;
+  if (log[today] && log[today].base != null) written = Math.max(0, total - log[today].base);
+  document.getElementById('statToday').textContent = written;
+  const goal = parseInt(document.getElementById('goalInput').value || '2000', 10);
+  document.getElementById('goalBar').style.width = Math.min(100, written / goal * 100) + '%';
+  let streak = 0;
+  let check = new Date();
+  if (!(log[today] && log[today].written > 0)) check = new Date(check.getTime() - 86400000);
+  while (true) {
+    const k = check.toISOString().slice(0, 10);
+    if (log[k] && log[k].written > 0) { streak++; check = new Date(check.getTime() - 86400000); }
+    else break;
+  }
+  document.getElementById('statStreak').textContent = streak;
+}
+function writeInput() {
+  clearTimeout(writeTimer);
+  writeTimer = setTimeout(() => {
+    const today = todayStr();
+    const log = store.get('ws_log', {});
+    const total = chapters.reduce((s, c) => s + countChars(c.content), 0);
+    if (!log[today] || log[today].base == null) log[today] = { base: total, written: 0 };
+    log[today].written = Math.max(0, total - log[today].base);
+    store.set('ws_log', log);
+    saveCurrent();
+    document.getElementById('saveMeta').textContent = `已保存 ${nowHM()}`;
+  }, 600);
+}
+document.getElementById('writeArea').addEventListener('input', writeInput);
+document.getElementById('chapTitle').addEventListener('input', () => {
+  clearTimeout(writeTimer);
+  writeTimer = setTimeout(() => { saveCurrent(); document.getElementById('saveMeta').textContent = `已保存 ${nowHM()}`; }, 600);
+});
+document.getElementById('goalInput').addEventListener('change', () => {
+  store.set('ws_goal', document.getElementById('goalInput').value);
+  updateStats();
+});
+document.getElementById('goalInput').value = store.get('ws_goal', 2000);
+renderChapters(); loadCurrent();
+
+/* ========== Obsidian ========== */
+const obs = {
+  vault: store.get('ws_obs_vault', ''),
+  files: [],
+  get log() { return store.get('ws_obs_log', {}); },
+  set log(v) { store.set('ws_obs_log', v); }
+};
+function obsConnected() { return !!obs.vault; }
+function obsJoin(p) { return obs.vault + (obs.vault.endsWith('\\') || obs.vault.endsWith('/') ? '' : '\\') + p; }
+
+function obsRenderStatus() {
+  const el = document.getElementById('obsStatus');
+  el.innerHTML = obsConnected()
+    ? `已连接库：<b style="color:var(--text)">${obs.vault}</b>`
+    : '尚未连接 Obsidian 库 —— 点击下方「选择库文件夹」，选中你的 Obsidian 笔记文件夹即可开始统计。';
+  document.getElementById('obsSearch').value = '';
+  document.getElementById('obsNewTitle').value = '';
+}
+
+async function obsPickVault() {
+  if (!window.obsidianAPI) { document.getElementById('obsStatus').textContent = '此功能需要桌面版（Electron）环境'; return; }
+  const p = await window.obsidianAPI.pickVault();
+  if (!p) return;
+  obs.vault = p;
+  store.set('ws_obs_vault', p);
+  obsRenderStatus();
+  await obsScan();
+}
+
+async function obsScan() {
+  if (!obsConnected()) return;
+  const el = document.getElementById('obsStatus');
+  el.innerHTML = '扫描中…';
+  const res = await window.obsidianAPI.scan(obs.vault);
+  if (res.error) { el.textContent = '读取失败：' + res.error; return; }
+  obs.files = res.files.sort((a, b) => b.mtime - a.mtime);
+  const total = obs.files.reduce((s, f) => s + f.words, 0);
+  document.getElementById('obsCount').textContent = obs.files.length;
+  document.getElementById('obsTotal').textContent = total.toLocaleString();
+  const today = todayStr();
+  const log = obs.log;
+  if (!log[today] || log[today].base == null) log[today] = { base: total, written: 0 };
+  log[today].written = Math.max(0, total - log[today].base);
+  obs.log = log;
+  document.getElementById('obsToday').textContent = log[today].written;
+  const goal = parseInt(document.getElementById('obsGoalInput').value || '2000', 10);
+  document.getElementById('obsGoalBar').style.width = Math.min(100, log[today].written / goal * 100) + '%';
+  let streak = 0;
+  let check = new Date();
+  if (!(log[today] && log[today].written > 0)) check = new Date(check.getTime() - 86400000);
+  while (true) {
+    const k = check.toISOString().slice(0, 10);
+    if (log[k] && log[k].written > 0) { streak++; check = new Date(check.getTime() - 86400000); }
+    else break;
+  }
+  document.getElementById('obsStreak').textContent = streak;
+  renderObsChart(log);
+  renderObsFiles();
+  el.innerHTML = `已连接库：<b style="color:var(--text)">${obs.vault}</b> · 上次扫描 ${nowHM()}`;
+}
+
+function renderObsChart(log) {
+  const box = document.getElementById('obsChart');
+  const W = ['日','一','二','三','四','五','六'];
+  const days = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(Date.now() - i * 86400000);
+    const k = d.toISOString().slice(0, 10);
+    days.push({ k, w: W[d.getDay()], v: (log[k] && log[k].written) || 0 });
+  }
+  const max = Math.max(...days.map(d => d.v), 1);
+  box.innerHTML = days.map(d =>
+    `<div class="bar" title="${d.k}：${d.v} 字"><i style="height:${Math.max(2, Math.round(d.v / max * 100))}%"></i><span>${d.w}</span></div>`
+  ).join('');
+}
+
+function renderObsFiles() {
+  const q = document.getElementById('obsSearch').value.trim().toLowerCase();
+  const list = obs.files.filter(f => !q || f.rel.toLowerCase().includes(q));
+  const box = document.getElementById('obsFiles');
+  box.innerHTML = '';
+  if (!list.length) { box.innerHTML = '<div class="obs-empty">📄 没有找到笔记</div>'; return; }
+  list.slice(0, 200).forEach(f => {
+    const d = new Date(f.mtime);
+    const dstr = `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+    const row = document.createElement('div');
+    row.className = 'obs-file';
+    row.innerHTML = `<span class="f-name">${f.rel}</span><span class="f-meta">${f.words.toLocaleString()} 字 · ${dstr}</span><button>打开</button>`;
+    row.querySelector('button').onclick = () => window.obsidianAPI.openInObsidian({ vaultPath: obs.vault, rel: f.rel });
+    box.appendChild(row);
+  });
+}
+document.getElementById('obsSearch').addEventListener('input', renderObsFiles);
+
+function obsOpenFolder() { if (obsConnected()) window.obsidianAPI.openFolder(obs.vault); }
+function obsOpenApp() {
+  if (obsConnected()) window.obsidianAPI.openInObsidian({ vaultPath: obs.vault, rel: '' });
+}
+async function obsNewNote() {
+  const title = document.getElementById('obsNewTitle').value.trim();
+  if (!title) return;
+  if (!obsConnected()) { document.getElementById('obsStatus').textContent = '请先选择 Obsidian 库文件夹'; return; }
+  const safe = title.replace(/[\\/:*?"<>|]/g, '_');
+  const res = await window.obsidianAPI.write({ file: obsJoin(safe + '.md'), content: '', append: false });
+  document.getElementById('obsNewTitle').value = '';
+  if (res.ok) {
+    await obsScan();
+    document.getElementById('obsStatus').innerHTML = `已创建：<b style="color:var(--text)">${safe}.md</b>`;
+  } else document.getElementById('obsStatus').textContent = '创建失败：' + res.error;
+}
+async function obsAppendInsp() {
+  const txt = document.getElementById('obsQuickWrite').value.trim();
+  if (!txt) return;
+  if (!obsConnected()) { document.getElementById('obsStatus').textContent = '请先选择 Obsidian 库文件夹'; return; }
+  const body = `## ${new Date().toLocaleString()}\n${txt}\n`;
+  const res = await window.obsidianAPI.write({ file: obsJoin('灵感收集.md'), content: body, append: true });
+  document.getElementById('obsQuickWrite').value = '';
+  if (res.ok) {
+    await obsScan();
+    document.getElementById('obsStatus').innerHTML = `已追加到 <b style="color:var(--text)">灵感收集.md</b>`;
+  } else document.getElementById('obsStatus').textContent = '追加失败：' + res.error;
+}
+async function obsExportMats() {
+  if (!obsConnected()) { document.getElementById('obsStatus').textContent = '请先选择 Obsidian 库文件夹'; return; }
+  const mats = store.get('ws_mats', []);
+  if (!mats.length) { document.getElementById('obsStatus').textContent = '素材箱是空的，先去收藏几条灵感吧'; return; }
+  let body = `# 灵感收集箱（由创作工作站导出）\n\n> 导出时间：${new Date().toLocaleString()}\n\n`;
+  mats.forEach(m => { body += `## ${m.tag} · ${m.time}\n${m.text}\n\n`; });
+  const res = await window.obsidianAPI.write({ file: obsJoin('灵感收集.md'), content: body, append: false });
+  if (res.ok) {
+    await obsScan();
+    document.getElementById('obsStatus').innerHTML = `已导出 ${mats.length} 条素材到 <b style="color:var(--text)">灵感收集.md</b>`;
+  } else document.getElementById('obsStatus').textContent = '导出失败：' + res.error;
+}
+document.getElementById('obsGoalInput').addEventListener('change', () => {
+  store.set('ws_obs_goal', document.getElementById('obsGoalInput').value);
+});
+document.getElementById('obsGoalInput').value = store.get('ws_obs_goal', 2000);
+obsRenderStatus();
+if (obsConnected()) obsScan();
+
+/* ========== 网络工具箱 ========== */
+const DNS_SERVERS = [
+  { name: '阿里 DNS', ip: '223.5.5.5' },
+  { name: '腾讯 DNS', ip: '119.29.29.29' },
+  { name: '114 纯净', ip: '114.114.114.114' },
+  { name: '百度 DNS', ip: '180.76.76.76' },
+  { name: '360 DNS', ip: '101.226.4.6' },
+  { name: 'CNNIC', ip: '1.2.4.8' },
+  { name: '谷歌 DNS', ip: '8.8.8.8' },
+  { name: 'Cloudflare', ip: '1.1.1.1' }
+];
+const WEB_TARGETS = [
+  { name: '百度', host: 'www.baidu.com' },
+  { name: 'B站', host: 'www.bilibili.com' },
+  { name: '淘宝', host: 'www.taobao.com' },
+  { name: '京东', host: 'www.jd.com' },
+  { name: '知乎', host: 'www.zhihu.com' },
+  { name: '微博', host: 'weibo.com' },
+  { name: '网易', host: 'www.163.com' },
+  { name: 'QQ', host: 'www.qq.com' },
+  { name: '必应', host: 'cn.bing.com' },
+  { name: 'GitHub', host: 'github.com' }
+];
+const GAME_NODES = [
+  { name: '三角洲行动(国服)', host: 'delta.qq.com' },
+  { name: '三角洲(腾讯服)', host: 'game.qq.com' },
+  { name: '三角洲(国际)', host: 'playdeltaforce.com' },
+  { name: 'Steam', host: 'store.steampowered.com' },
+  { name: 'Epic', host: 'epicgames.com' },
+  { name: 'Xbox', host: 'xbox.com' },
+  { name: 'PlayStation', host: 'playstation.com' },
+  { name: '米哈游', host: 'hoyoverse.com' },
+  { name: '拳头游戏', host: 'riotgames.com' },
+  { name: 'Minecraft', host: 'minecraft.net' },
+  { name: '暴雪', host: 'blizzard.com' },
+  { name: 'EA', host: 'ea.com' },
+  { name: '育碧', host: 'ubisoft.com' },
+  { name: '完美世界', host: 'www.wanmei.com' },
+  { name: '网易游戏', host: 'game.163.com' },
+  { name: '腾讯游戏', host: 'game.qq.com' }
+];
+
+function netNeedApi() {
+  if (!window.netAPI) {
+    document.getElementById('dnsResults').innerHTML = '<div class="net-empty">此功能需要桌面版（Electron）环境</div>';
+    return false;
+  }
+  return true;
+}
+function netRunInit() {
+  if (!netInit && window.netAPI) {
+    netInit = true;
+    // 延迟到脚本全部执行完再测速，避免早期调用时常量尚未初始化（TDZ）
+    setTimeout(() => { netDnsTest(); netWebTest(); }, 0);
+  }
+}
+function netMsClass(ms) {
+  if (ms < 0) return 'bad';
+  if (ms < 80) return 'ok';
+  if (ms < 200) return 'warn';
+  return 'bad';
+}
+function netMsText(r) {
+  return r.ms > 0 ? r.ms + ' ms' : (r.error || '—');
+}
+
+async function netDnsTest() {
+  if (!netNeedApi()) return;
+  const box = document.getElementById('dnsResults');
+  box.innerHTML = '<div class="net-empty">测速中…</div>';
+  const res = await window.netAPI.dnsTest({ servers: DNS_SERVERS.map(s => s.ip), domain: 'www.baidu.com' });
+  netDnsResults = res.filter(r => r.ms > 0).sort((a, b) => a.ms - b.ms);
+  let min = Infinity; netBestDns = null;
+  res.forEach(r => { if (r.ms > 0 && r.ms < min) { min = r.ms; netBestDns = r.ip; } });
+  box.innerHTML = '';
+  DNS_SERVERS.forEach(s => {
+    const r = res.find(x => x.ip === s.ip) || {};
+    const row = document.createElement('div');
+    row.className = 'net-row' + (r.ms > 0 && r.ip === netBestDns ? ' best' : '');
+    row.innerHTML = `<span class="net-name">${s.name}${r.ms > 0 && r.ip === netBestDns ? ' ⭐' : ''}</span><code>${s.ip}</code><span class="net-ms ${netMsClass(r.ms)}">${netMsText(r)}</span>`;
+    box.appendChild(row);
+  });
+  document.getElementById('dnsBest').textContent = netBestDns ? `✅ 最优 DNS：${netBestDns}（${min} ms）` : '⚠️ 没有可用的 DNS';
+}
+
+async function netWebTest() {
+  if (!netNeedApi()) return;
+  const box = document.getElementById('webResults');
+  box.innerHTML = '<div class="net-empty">测速中…</div>';
+  const res = await window.netAPI.httpLatency({ targets: WEB_TARGETS.map(t => ({ name: t.name, host: t.host })) });
+  box.innerHTML = '';
+  res.forEach(r => {
+    const row = document.createElement('div');
+    row.className = 'net-row';
+    row.innerHTML = `<span class="net-name">${r.name}</span><code>${r.host}</code><span class="net-ms ${netMsClass(r.ms)}">${r.ms > 0 ? r.ms + ' ms' : (r.error || '失败')}</span>`;
+    box.appendChild(row);
+  });
+}
+
+async function netGameTest() {
+  if (!netNeedApi()) return;
+  const box = document.getElementById('gameResults');
+  box.innerHTML = '<div class="net-empty">测速中…</div>';
+  const res = await window.netAPI.tcpPing({ targets: GAME_NODES.map(t => ({ name: t.name, host: t.host, port: 443 })) });
+  box.innerHTML = '';
+  res.forEach(r => {
+    const row = document.createElement('div');
+    row.className = 'net-row';
+    row.innerHTML = `<span class="net-name">${r.name}</span><code>${r.host}</code><span class="net-ms ${netMsClass(r.ms)}">${netMsText(r)}</span>`;
+    box.appendChild(row);
+  });
+}
+
+async function netCustomPing() {
+  const raw = document.getElementById('netCustom').value.trim();
+  if (!raw) return;
+  let host = raw, port = 443;
+  const m = raw.match(/^(.*?):(\d+)$/);
+  if (m) { host = m[1]; port = parseInt(m[2], 10); }
+  const box = document.getElementById('gameResults');
+  box.innerHTML = '<div class="net-empty">测速中…</div>';
+  const res = await window.netAPI.tcpPing({ targets: [{ name: '自定义节点', host, port }] });
+  const r = res[0];
+  box.innerHTML = '';
+  const row = document.createElement('div');
+  row.className = 'net-row';
+  row.innerHTML = `<span class="net-name">${r.name}</span><code>${host}:${port}</code><span class="net-ms ${netMsClass(r.ms)}">${netMsText(r)}</span>`;
+  box.appendChild(row);
+}
+
+function netCopyDns() {
+  if (!netBestDns) { alert('请先测速，得到最优 DNS 后再复制'); return; }
+  window.netAPI.copy(netBestDns);
+  document.getElementById('dnsBest').textContent = `已复制：${netBestDns}`;
+}
+async function netFlushDns() {
+  if (!netNeedApi()) return;
+  const r = await window.netAPI.flushDns();
+  document.getElementById('dnsBest').textContent = r.ok ? '🧹 DNS 缓存已刷新' : '刷新失败（可能需要管理员权限）：' + r.output;
+}
+function netOpenNcpa() { if (window.netAPI) window.netAPI.openNcpa(); }
+
+async function netCurrentDns() {
+  if (!netNeedApi()) return;
+  const box = document.getElementById('dnsCurrent');
+  box.innerHTML = '<div class="net-empty">读取中…</div>';
+  const r = await window.netAPI.getCurrentDns();
+  if (!r.ok) { box.innerHTML = '<div class="net-empty">读取失败：' + (r.error || '未知错误') + '</div>'; return; }
+  box.innerHTML = '';
+  (r.rows || []).forEach(row => {
+    const d = document.createElement('div');
+    d.className = 'net-row';
+    d.innerHTML = `<span class="net-name">${row.alias || ('网卡 ' + row.index)}</span><code>${row.servers.join(', ')}</code>`;
+    box.appendChild(d);
+  });
+  if (!(r.rows || []).length) box.innerHTML = '<div class="net-empty">未检测到手动配置的 DNS（可能使用自动获取）</div>';
+}
+
+async function netApplyFastDns() {
+  if (!netNeedApi()) return;
+  const status = document.getElementById('dnsSwitchStatus');
+  if (!netBestDns || !netDnsResults.length) {
+    status.textContent = '正在测速…';
+    await netDnsTest();
+  }
+  if (!netBestDns) { status.textContent = '⚠️ 测速失败，无法应用'; return; }
+  const primary = netBestDns;
+  const backup = (netDnsResults[1] && netDnsResults[1].ip) || '119.29.29.29';
+  if (!confirm(`将把系统 DNS 切换为：\n主：${primary}\n备：${backup}\n\n此操作需要管理员授权（会弹出系统确认框），是否继续？`)) return;
+  status.textContent = '等待管理员授权…';
+  const r = await window.netAPI.applyFastDns({ primary, backup });
+  if (r.ok) {
+    store.set('ws_dns_backup', r.previous && r.previous.length ? r.previous : [primary]);
+    status.textContent = `✅ 已切换！网卡「${r.alias}」DNS 改为 ${primary}（原设置已备份，可随时恢复）`;
+    netCurrentDns();
+  } else {
+    status.textContent = '❌ 切换失败：' + (r.error || '未知错误（可能取消了授权）');
+  }
+}
+
+async function netRestoreDns() {
+  if (!netNeedApi()) return;
+  const status = document.getElementById('dnsSwitchStatus');
+  const backup = store.get('ws_dns_backup', null);
+  if (!backup || !backup.length) { status.textContent = '没有备份记录（尚未执行过一键切换）'; return; }
+  if (!confirm(`将恢复系统 DNS 为：${backup.join(', ')}（需要管理员授权）`)) return;
+  status.textContent = '等待管理员授权…';
+  const r = await window.netAPI.restoreDns({ servers: backup });
+  if (r.ok) {
+    status.textContent = `✅ 已恢复！网卡「${r.alias}」DNS 还原为 ${backup.join(', ')}`;
+    netCurrentDns();
+  } else {
+    status.textContent = '❌ 恢复失败：' + (r.error || '未知错误（可能取消了授权）');
+  }
+}
+
+/* ---- 游戏网络诊断 ---- */
+function netDiagShow(html) { document.getElementById('gameDiag').innerHTML = html; }
+function netDiagRow(name, val, cls) {
+  return `<div class="net-row"><span class="net-name">${name}</span><span class="net-ms ${cls || ''}">${val}</span></div>`;
+}
+function netDiagAdvice(txt) { document.getElementById('gameAdvice').textContent = '💡 ' + txt; }
+
+function netPingView(r, label, mode) {
+  if (!r.ok) { netDiagShow(netDiagRow(label, r.error || '失败', 'bad')); netDiagAdvice(''); return; }
+  let cls = 'ok', tip = '';
+  if (mode === 'gateway') {
+    if (r.loss > 0) { cls = 'bad'; tip = '⚠️ 路由器有丢包！先重启路由器，检查网线是否松动'; }
+    else if (r.avg < 5) { cls = 'ok'; tip = '本地网络到路由器很快，问题不在局域网'; }
+    else if (r.avg < 30) { cls = 'warn'; tip = '路由器延迟偏高，可尝试重启路由器'; }
+    else { cls = 'bad'; tip = '⚠️ 路由器延迟很高，建议重启路由器或联系宽带商'; }
+  } else {
+    if (r.loss > 10) { cls = 'bad'; tip = '⚠️ 外网丢包严重！线路不稳定，游戏高峰更明显'; }
+    else if (r.loss > 2) { cls = 'warn'; tip = '有少量丢包，游戏可能间歇卡顿'; }
+    else if (r.avg < 60) { cls = 'ok'; tip = '外网延迟良好，卡顿更可能来自本地或服务器高峰'; }
+    else if (r.avg < 150) { cls = 'warn'; tip = '外网延迟偏高，可尝试：用网线、关后台下载、游戏内选低延迟服务器'; }
+    else { cls = 'bad'; tip = '⚠️ 外网延迟很高！建议检查后台程序占用带宽，或考虑官方加速器'; }
+  }
+  const lossTxt = r.loss > 0 ? `<span style="color:var(--red)">丢包 ${r.loss}%</span>` : '丢包 0%';
+  netDiagShow(
+    netDiagRow(label, r.recv > 0 ? `平均 ${r.avg} ms（${r.min}-${r.max}）` : '全部超时', cls) +
+    netDiagRow('发送/接收', `${r.sent}/${r.recv}`) +
+    netDiagRow('丢包率', lossTxt, r.loss > 0 ? 'bad' : 'ok')
+  );
+  netDiagAdvice(tip);
+}
+
+async function netWifi() {
+  if (!window.netAPI) return;
+  netDiagShow('<div class="net-empty">检测中…</div>');
+  netDiagAdvice('');
+  const r = await window.netAPI.wifiInfo();
+  if (!r.ok) { netDiagShow('<div class="net-empty">' + r.error + '</div>'); return; }
+  const sig = parseInt(r.signal, 10) || 0;
+  let cls = 'ok', tip = 'Wi-Fi 信号良好，卡顿多半不在 Wi-Fi 上';
+  if (sig < 45) { cls = 'bad'; tip = '⚠️ Wi-Fi 信号差！这是"网卡"最常见原因，强烈建议改用网线'; }
+  else if (sig < 70) { cls = 'warn'; tip = 'Wi-Fi 信号一般，建议靠近路由器或改用网线'; }
+  netDiagShow(
+    netDiagRow('Wi-Fi（SSID）', r.ssid || '—') +
+    netDiagRow('信号强度', (r.signal || '—') + (r.signal ? '' : ''), cls) +
+    netDiagRow('接收速率', r.rate || '—') +
+    netDiagRow('信道', r.channel || '—')
+  );
+  netDiagAdvice(tip);
+}
+
+async function netPingGateway() {
+  if (!window.netAPI) return;
+  netDiagShow('<div class="net-empty">检测中…</div>');
+  netDiagAdvice('');
+  const g = await window.netAPI.gateway();
+  if (!g.ok || !g.gateway) { netDiagShow('<div class="net-empty">找不到路由器地址</div>'); return; }
+  if (/^198\.18\./.test(g.gateway) || /^192\.0\.2\./.test(g.gateway)) {
+    netDiagAdvice('检测到默认路由走的是虚拟网卡（' + g.gateway + '，通常是代理/加速软件）——游戏流量可能被代理转发导致延迟异常，建议游戏时关闭代理软件或为游戏设置直连规则。');
+  }
+  const r = await window.netAPI.ping({ host: g.gateway, count: 8 });
+  netPingView(r, '路由器 ' + g.gateway, 'gateway');
+}
+
+async function netPingOutside() {
+  if (!window.netAPI) return;
+  netDiagShow('<div class="net-empty">检测中…</div>');
+  netDiagAdvice('');
+  const r = await window.netAPI.ping({ host: 'game.qq.com', count: 6 });
+  netPingView(r, '外网（腾讯游戏节点）', 'internet');
+}
+
+async function netSpeed() {
+  if (!window.netAPI) return;
+  netDiagShow('<div class="net-empty">测速中（约 4 秒）…</div>');
+  netDiagAdvice('');
+  const r = await window.netAPI.speedTest({ seconds: 4 });
+  if (!r.ok) { netDiagShow(netDiagRow('网速测试', r.error || '失败', 'bad')); return; }
+  let cls = r.mbps >= 10 ? 'ok' : r.mbps >= 3 ? 'warn' : 'bad';
+  let tip = r.mbps >= 10 ? '带宽充足，网卡问题与带宽无关' : r.mbps >= 3 ? '带宽一般，够用但别同时开太多下载' : '⚠️ 带宽偏低！检查后台下载/其他设备占用';
+  netDiagShow(
+    netDiagRow('下载速度', r.mbps + ' MB/s', cls) +
+    netDiagRow('测试时长', r.seconds + ' 秒')
+  );
+  netDiagAdvice(tip);
+}
+netRunInit();
+
+/* ========== 性能优化 ========== */
+function perfNeedApi() {
+  if (!window.perfAPI) {
+    document.getElementById('perfSpecs').innerHTML = '<div class="net-empty">此功能需要桌面版环境</div>';
+    return false;
+  }
+  return true;
+}
+function perfRunInit() {
+  if (!perfInit && window.perfAPI) {
+    perfInit = true;
+    setTimeout(perfStatus, 0);
+  }
+}
+async function perfStatus() {
+  if (!perfNeedApi()) return;
+  const box = document.getElementById('perfSpecs');
+  box.innerHTML = '<div class="net-empty">检测中…</div>';
+  document.getElementById('perfAdvice').textContent = '';
+  document.getElementById('perfTips').textContent = '检测中…';
+  const r = await window.perfAPI.status();
+  if (!r.ok) { box.innerHTML = '<div class="net-empty">检测失败：' + (r.error || '未知错误') + '</div>'; return; }
+  const disks = (r.disks || []).map(d => `${d.drive} 剩 ${d.free}G/${d.total}G`).join(' · ');
+  box.innerHTML =
+    netDiagRow('CPU', r.cpu || '—') +
+    netDiagRow('显卡', r.gpu || '—') +
+    netDiagRow('内存', `${r.freeRam}G 可用 / ${r.ram}G 总量`) +
+    netDiagRow('磁盘', disks || '—') +
+    netDiagRow('电源计划', r.plan || '—');
+  const tips = [];
+  if (r.ram < 8) tips.push('⚠️ 内存不足 8GB：游戏卡顿很可能与内存有关，进游戏前关闭浏览器等大程序');
+  if (r.freeRam < 2) tips.push('⚠️ 可用内存过低！关掉后台大程序再进游戏');
+  (r.disks || []).forEach(d => {
+    if (d.total > 0 && d.free / d.total < 0.1) tips.push(`⚠️ 磁盘 ${d.drive} 剩余不足 10%，建议清理（游戏需要临时空间）`);
+  });
+  if (/Intel|Radeon.*Graphics|核显/i.test(r.gpu || '')) tips.push('💡 检测到集成显卡：建议降低游戏画质/分辨率，开启性能优先模式');
+  if (r.plan && !/性能/.test(r.plan)) tips.push('💡 当前电源计划是「' + r.plan + '」，点「一键优化」切换为高性能');
+  (r.procs || []).slice(0, 3).forEach(p => {
+    if (p.mem > 500) tips.push(`💡 后台进程 ${p.name} 占用内存 ${p.mem}MB，进游戏前建议关闭`);
+  });
+  document.getElementById('perfTips').innerHTML = tips.length
+    ? tips.map(t => '<div>' + t + '</div>').join('')
+    : '✅ 系统状态良好，没有明显拖后腿的地方';
+  const procs = (r.procs || []).map(p => netDiagRow(p.name, p.mem + ' MB', p.mem > 800 ? 'warn' : '')).join('');
+  box.innerHTML += '<div class="net-tip" style="margin:10px 0 6px">内存占用最高的进程：</div>' + procs;
+}
+async function perfApply() {
+  if (!perfNeedApi()) return;
+  if (!confirm('将执行 4 项优化：\n① 切换高性能电源计划\n② 关闭游戏录制（Game DVR）\n③ 关闭全屏优化\n④ 关闭系统动画\n\n需要管理员授权，是否继续？')) return;
+  const st = document.getElementById('perfStatus');
+  st.textContent = '等待管理员授权…';
+  const r = await window.perfAPI.apply();
+  if (r.ok) {
+    store.set('ws_perf_backup', r.backup || {});
+    st.textContent = '✅ 优化完成！已改动：' + (r.changed || []).join('、') + '（原设置已备份，可随时还原）';
+  } else {
+    st.textContent = '❌ 优化失败：' + (r.error || '未知错误（可能取消了授权）');
+  }
+}
+async function perfRestore() {
+  if (!perfNeedApi()) return;
+  const backup = store.get('ws_perf_backup', null);
+  if (!backup || !Object.keys(backup).length) {
+    document.getElementById('perfStatus').textContent = '没有优化记录（尚未执行过一键优化）';
+    return;
+  }
+  if (!confirm('将还原全部优化设置（需要管理员授权）')) return;
+  const st = document.getElementById('perfStatus');
+  st.textContent = '等待管理员授权…';
+  const r = await window.perfAPI.restore({ backup });
+  st.textContent = r.ok ? ('✅ 已还原：' + (r.restored || []).join('、')) : ('❌ 还原失败：' + (r.error || '未知错误'));
+}
+
+/* ========== API 余额 ========== */
+// 读取 Key：兼容 JSON 带引号与裸字符串两种存储格式
+function apiGetKey(id) {
+  let v = localStorage.getItem('ws_api_key_' + id) || '';
+  try { v = JSON.parse(v); } catch {}
+  return typeof v === 'string' ? v : String(v);
+}
+const API_PROVIDERS = [
+  { id: 'deepseek', name: 'DeepSeek', placeholder: 'sk-...', note: '查询 api.deepseek.com 账户余额', help: '获取密钥：https://platform.deepseek.com/api_keys' },
+  { id: 'openai', name: 'OpenAI', placeholder: 'sk-...', note: '查询订阅计划与额度（需有账单读取权限的密钥）', help: '获取密钥：https://platform.openai.com/api-keys' },
+  { id: 'moonshot', name: 'Moonshot (Kimi)', placeholder: 'sk-...', note: '查询 api.moonshot.cn 账户余额', help: '获取密钥：https://platform.moonshot.cn/console/api-keys' },
+  { id: 'siliconflow', name: '硅基流动 SiliconFlow', placeholder: 'sk-...', note: '查询 api.siliconflow.cn 账户余额', help: '获取密钥：https://cloud.siliconflow.cn/account/ak' },
+  { id: 'zhipu', name: '智谱 GLM', placeholder: '粘贴 API Key', note: '查询 open.bigmodel.cn 账户余额', help: '获取密钥：https://open.bigmodel.cn/usercenter/apikeys' }
+];
+
+function renderApiProviders() {
+  const sel = document.getElementById('apiProvider');
+  sel.innerHTML = '';
+  API_PROVIDERS.forEach(p => {
+    const o = document.createElement('option');
+    o.value = p.id; o.textContent = p.name;
+    sel.appendChild(o);
+  });
+}
+function apiProviderChange() {
+  const id = document.getElementById('apiProvider').value;
+  const p = API_PROVIDERS.find(x => x.id === id);
+  const key = document.getElementById('apiKey');
+  key.placeholder = p.placeholder;
+  key.value = apiGetKey(id);
+  document.getElementById('apiNote').textContent = p.note;
+  document.getElementById('apiHelp').textContent = p.help;
+}
+async function apiQuery() {
+  if (!window.apiAPI) { document.getElementById('apiResult').innerHTML = '<div class="net-empty">此功能需要桌面版环境</div>'; return; }
+  const id = document.getElementById('apiProvider').value;
+  const key = document.getElementById('apiKey').value.trim();
+  if (!key) { document.getElementById('apiResult').innerHTML = '<div class="net-empty">请先粘贴 API Key</div>'; return; }
+  store.set('ws_api_key_' + id, key);
+  const out = document.getElementById('apiResult');
+  out.innerHTML = '<div class="net-empty">查询中…</div>';
+  const r = await window.apiAPI.balance({ provider: id, key });
+  if (!r.ok) { out.innerHTML = '<div class="net-empty">查询失败：' + (r.error || '未知错误') + '</div>'; return; }
+  const rows = apiBuildRows(r);
+  out.innerHTML = rows.map(x => netDiagRow(x[0], x[1], x[2] || '')).join('') ||
+    '<div class="net-empty">未获取到数据，请检查 Key 是否正确</div>';
+}
+function apiBuildRows(r) {
+  const rows = [];
+  const main = r.results && r.results.main;
+  const status = main ? main.status : 0;
+  if (status && status >= 400) {
+    rows.push(['查询状态', 'HTTP ' + status + '（Key 无效或无权限）', 'bad']);
+    return rows;
+  }
+  if (r.provider === 'deepseek') {
+    const d = main && main.data;
+    if (d && d.balance_infos && d.balance_infos.length) {
+      const b = d.balance_infos[0];
+      rows.push(['总余额', b.total_balance + ' ' + (b.currency || 'CNY'), 'ok']);
+      rows.push(['充值余额', b.topped_up_balance + ' ' + (b.currency || 'CNY')]);
+      rows.push(['赠送余额', b.granted_balance + ' ' + (b.currency || 'CNY')]);
+      rows.push(['账户状态', d.is_available ? '✅ 可用' : '❌ 不可用', d.is_available ? 'ok' : 'bad']);
+    } else rows.push(['响应', JSON.stringify(d || main)]);
+  } else if (r.provider === 'openai') {
+    const sub = r.results.subscription, cred = r.results.credit;
+    if (sub && sub.status === 200 && sub.data) {
+      rows.push(['订阅计划', (sub.data.plan && sub.data.plan.title) || '—', 'ok']);
+      rows.push(['硬限额', sub.data.hard_limit_usd + ' USD']);
+      rows.push(['软限额', sub.data.soft_limit_usd + ' USD']);
+    } else rows.push(['订阅', (sub && (sub.status === 401 || sub.status === 403)) ? '无权限' : JSON.stringify((sub && sub.data) || {}), 'warn']);
+    if (cred && cred.status === 200 && cred.data) {
+      rows.push(['已用额度', cred.data.total_used + ' USD', 'warn']);
+      rows.push(['剩余可用', cred.data.total_available + ' USD', 'ok']);
+    } else rows.push(['额度', (cred && (cred.status === 401 || cred.status === 403)) ? '无权限' : JSON.stringify((cred && cred.data) || {}), 'warn']);
+  } else if (r.provider === 'moonshot') {
+    const d = main && main.data;
+    if (d && d.data) {
+      rows.push(['可用余额', d.data.available_balance + ' 元', 'ok']);
+      rows.push(['赠送余额', d.data.voucher_balance + ' 元']);
+      rows.push(['充值余额', d.data.cash_balance + ' 元']);
+    } else rows.push(['响应', JSON.stringify(d || main)]);
+  } else if (r.provider === 'siliconflow') {
+    const d = main && main.data;
+    if (d && typeof d === 'object' && d.balance != null) {
+      rows.push(['余额', d.balance + (d.currency ? ' ' + d.currency : ' 元'), 'ok']);
+    } else rows.push(['响应', JSON.stringify(d || main)]);
+  } else {
+    rows.push(['响应', JSON.stringify((main && main.data) || {})]);
+  }
+  return rows;
+}
+function apiRunInit() {
+  if (!apiInit && window.apiAPI) {
+    apiInit = true;
+    setTimeout(() => {
+      const id = document.getElementById('apiProvider').value;
+      if (apiGetKey(id)) apiQuery();
+    }, 100);
+  }
+}
+renderApiProviders();
+// 自动选中已保存过 Key 的平台
+const apiSaved = API_PROVIDERS.find(p => apiGetKey(p.id));
+if (apiSaved) document.getElementById('apiProvider').value = apiSaved.id;
+apiProviderChange();
+// 有已保存 Key 则自动查询余额
+apiRunInit();
+
+/* ========== 磁盘清理 ========== */
+let diskInit = false, diskCats = [];
+function diskRunInit() {
+  if (!diskInit && window.diskAPI) {
+    diskInit = true;
+    setTimeout(diskScan, 0);
+  }
+}
+async function diskScan() {
+  if (!window.diskAPI) { document.getElementById('diskDrives').innerHTML = '<div class="net-empty">此功能需要桌面版环境</div>'; return; }
+  const dBox = document.getElementById('diskDrives');
+  dBox.innerHTML = '<div class="net-empty">扫描中…</div>';
+  const r = await window.diskAPI.scan();
+  if (!r.ok) { dBox.innerHTML = '<div class="net-empty">扫描失败：' + (r.error || '未知错误') + '</div>'; return; }
+  dBox.innerHTML = '';
+  (r.drives || []).forEach(d => {
+    const used = Math.max(0, d.total - d.free);
+    const pct = d.total > 0 ? Math.round(used / d.total * 100) : 0;
+    const row = document.createElement('div');
+    row.className = 'net-row';
+    row.innerHTML = `<span class="net-name">${d.drive} <code>已用 ${used}G / ${d.total}G（${pct}%）</code></span><span class="goal-bar" style="min-width:90px"><i style="width:${pct}%"></i></span>`;
+    dBox.appendChild(row);
+  });
+  diskCats = r.categories || [];
+  const cBox = document.getElementById('diskCategories');
+  cBox.innerHTML = '';
+  if (!diskCats.length) { cBox.innerHTML = '<div class="net-empty">没有可清理的项目</div>'; return; }
+  diskCats.forEach(c => {
+    const row = document.createElement('label');
+    row.className = 'net-row';
+    row.style.cursor = 'pointer';
+    const sizeTxt = c.sizeMB >= 1 ? c.sizeMB + ' MB' : (c.sizeMB > 0 ? '<1 MB' : '0 MB');
+    row.innerHTML = `<input type="checkbox" style="width:16px;height:16px;accent-color:var(--accent);flex-shrink:0" ${c.sizeMB >= 1 ? 'checked' : ''} data-path="${encodeURIComponent(c.path)}" data-name="${encodeURIComponent(c.name)}" data-kind="${c.kind}">
+      <span class="net-name">${c.name}${c.needAdmin ? ' <span style="color:var(--yellow);font-size:11px">(需管理员)</span>' : ''}</span>
+      <span class="net-ms ${c.sizeMB >= 50 ? 'warn' : ''}">${sizeTxt}</span>`;
+    cBox.appendChild(row);
+  });
+  document.getElementById('diskCleanStatus').textContent = '';
+}
+async function diskClean() {
+  if (!window.diskAPI) return;
+  const items = [];
+  document.querySelectorAll('#diskCategories input[type=checkbox]:checked').forEach(cb => {
+    items.push({ name: decodeURIComponent(cb.dataset.name), path: decodeURIComponent(cb.dataset.path), kind: cb.dataset.kind });
+  });
+  if (!items.length) { document.getElementById('diskCleanStatus').textContent = '请先勾选要清理的项目'; return; }
+  if (!confirm(`将清理 ${items.length} 项（含回收站），需要管理员授权，是否继续？`)) return;
+  const st = document.getElementById('diskCleanStatus');
+  st.textContent = '清理中，等待授权…';
+  const r = await window.diskAPI.clean({ items });
+  if (r.ok) {
+    st.textContent = `✅ 已清理：${(r.done || []).join('、')}（释放约 ${r.freedMB} MB）`;
+    diskScan();
+  } else {
+    st.textContent = '❌ 清理失败：' + (r.error || '未知错误（可能取消了授权）');
+  }
+}
+async function diskBigFiles() {
+  if (!window.diskAPI) return;
+  const box = document.getElementById('diskBigList');
+  box.innerHTML = '<div class="net-empty">扫描中（大文件夹可能需要一点时间）…</div>';
+  const folder = document.getElementById('diskFolder').value.trim();
+  const r = await window.diskAPI.bigFiles({ folder, minMB: 100 });
+  if (!r.ok) { box.innerHTML = '<div class="net-empty">' + (r.error || '扫描失败') + '</div>'; return; }
+  box.innerHTML = '';
+  if (!r.files.length) { box.innerHTML = '<div class="net-empty">未找到超过 100MB 的文件（' + r.folder + '）</div>'; return; }
+  r.files.forEach(f => {
+    const row = document.createElement('div');
+    row.className = 'net-row';
+    row.innerHTML = `<span class="net-name">${f.name} <code>${f.path}</code></span><span class="net-ms warn">${f.sizeMB} MB</span><button class="btn small" onclick="window.diskAPI.showInFolder(${JSON.stringify(f.path)})">打开位置</button>`;
+    box.appendChild(row);
+  });
+}
+function diskCleanMgr() { if (window.diskAPI) window.diskAPI.cleanmgr(); }
+diskRunInit();
+
+/* ========== 写作名言 ========== */
+const QUOTES = [
+  { t: '不要等到灵感来了才写，要写到灵感来。', f: '佚名' },
+  { t: '第一稿的唯一目的，是让你有东西可以改。', f: '佚名' },
+  { t: '写得好不好没关系，开始写最重要。', f: '佚名' },
+  { t: '写作就是在纸上重新活一次。', f: '佚名' },
+  { t: '灵感是给业余爱好者的，职业作家每天准时上班。', f: '斯蒂芬·金' },
+  { t: '每个作家都是先当读者，再当作者。', f: '佚名' },
+  { t: '今天写一百字，也好过明天写一万字。', f: '佚名' },
+  { t: '故事的魔力，在于让陌生人的心撞在一起。', f: '佚名' },
+  { t: '人物不是想出来的，是聊出来的。', f: '佚名' },
+  { t: '写作是唯一一种可以独自完成的旅行。', f: '佚名' },
+  { t: '先写下来，再写好。', f: '佚名' },
+  { t: '每一个伟大的故事，都始于一个普通的念头。', f: '佚名' }
+];
+function showQuote() {
+  const q = pick(QUOTES);
+  document.getElementById('quoteText').textContent = '「' + q.t + '」';
+  document.getElementById('quoteFrom').textContent = '—— ' + q.f;
+}
+showQuote();
+
+/* ========== 软件更新 ========== */
+function updEl(id) { return document.getElementById(id); }
+function updSetPill(kind, text) {
+  const pill = updEl('updPill');
+  pill.className = 'upd-pill' + (kind === 'update' ? ' has-update' : kind === 'error' ? ' error' : kind === 'checking' ? ' checking' : '');
+  updEl('updPillText').textContent = text;
+}
+function updRender(r) {
+  if (!r) return;
+  const badge = updEl('updVersionBadge');
+  if (r.current) badge.textContent = 'v' + r.current;
+  if (r.state === 'upToDate') {
+    updSetPill('ok', '已是最新版 v' + r.current);
+    updEl('updStatus').innerHTML = '<span class="upd-ok">✓ 已是最新版本</span>（当前 v' + r.current + '）';
+    updEl('updInstallBtn').style.display = 'none';
+    updEl('updNotes').style.display = 'none';
+  } else if (r.state === 'available') {
+    updSetPill('update', '发现新版本 v' + r.latest);
+    updEl('updStatus').innerHTML = '发现新版本 <span class="upd-version">v' + r.latest + '</span>（当前 v' + r.current + '）。点击「下载并安装」后自动更新并重启。';
+    updEl('updInstallBtn').style.display = '';
+    updEl('updInstallBtn').disabled = false;
+    if (r.notes) {
+      updEl('updNotes').style.display = '';
+      updEl('updNotes').innerHTML = '<strong>更新说明</strong><br>' + String(r.notes).replace(/\n/g, '<br>');
+    } else updEl('updNotes').style.display = 'none';
+  } else if (r.state === 'checking') {
+    updSetPill('checking', '检查更新…');
+    updEl('updStatus').textContent = '正在检查更新…';
+  } else if (r.state === 'error') {
+    updSetPill('error', r.message || '检查更新失败');
+    updEl('updStatus').innerHTML = '<span class="upd-err">' + (r.message || '检查更新失败，稍后重试') + '</span>';
+  } else {
+    // downloading / ready / updating
+    if (r.message) updEl('updStatus').textContent = r.message;
+  }
+}
+async function updCheck() {
+  if (!window.updateAPI) { updSetPill('error', '网页预览'); updEl('updStatus').textContent = '此功能需要桌面版（Electron）环境。'; return; }
+  updSetPill('checking', '检查更新…');
+  updEl('updStatus').textContent = '正在检查更新…';
+  updEl('updInstallBtn').style.display = 'none';
+  updEl('updNotes').style.display = 'none';
+  updEl('updProgressWrap').style.display = 'none';
+  const r = await window.updateAPI.check();
+  updRender(r);
+}
+async function updInstall() {
+  if (!window.updateAPI) return;
+  const btn = updEl('updInstallBtn');
+  btn.disabled = true;
+  updSetPill('update', '下载中…');
+  updEl('updStatus').textContent = '开始下载更新（支持断点续传与校验）…';
+  updEl('updProgressWrap').style.display = 'flex';
+  updEl('updProgressFill').style.width = '0%';
+  updEl('updPercent').textContent = '0%';
+  const r = await window.updateAPI.downloadInstall();
+  if (!r || !r.ok) {
+    btn.disabled = false;
+    updEl('updProgressWrap').style.display = 'none';
+    updEl('updStatus').innerHTML = '<span class="upd-err">' + (r && r.error || '更新失败') + '</span>';
+    updSetPill('error', '更新失败');
+  }
+  // 成功时主进程会拉起重启
+}
+
+// 主进程后台推送更新状态（4 小时自动检查、下载进度等）
+if (window.updateAPI) {
+  window.updateAPI.onStatus((data) => {
+    if (!data || !data.state) return;
+    if (data.state === 'downloading') {
+      updEl('updProgressWrap').style.display = 'flex';
+      const p = data.percent || 0;
+      updEl('updProgressFill').style.width = p + '%';
+      updEl('updPercent').textContent = p + '%';
+      updSetPill('update', data.message || ('下载中 ' + p + '%'));
+      updEl('updStatus').textContent = data.message || '下载中…';
+    } else {
+      updRender(data);
+    }
+  });
+}
+// 初始化
+(function updInit() {
+  if (!window.updateAPI) { updSetPill('error', '网页预览'); updEl('updStatus').textContent = '此功能需要桌面版（Electron）环境。'; return; }
+  updEl('updVersionBadge').textContent = 'v…';
+  window.updateAPI.currentVersion().then(v => { if (v) updEl('updVersionBadge').textContent = 'v' + v; });
+  updCheck();
+})();
+</script>
+</body>
+</html>

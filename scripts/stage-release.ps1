@@ -44,7 +44,9 @@ $man = @{
   notes      = $ReleaseNotes
   files      = @($fileObj)
 }
-$man | ConvertTo-Json -Depth 6 | Set-Content (Join-Path $relDir 'latest.json') -Encoding UTF8
+$json = $man | ConvertTo-Json -Depth 6
+# 无 BOM UTF-8，避免应用 JSON.parse 解析失败
+[System.IO.File]::WriteAllText((Join-Path $relDir 'latest.json'), $json, (New-Object System.Text.UTF8Encoding($false)))
 
 Write-Output ("OK: latest.json -> " + (Join-Path $relDir 'latest.json'))
 Write-Output ("OK: asar -> " + (Join-Path $relDir $fileName))

@@ -1,0 +1,9 @@
+# 依赖与构建产物
+node_modules/
+dist/
+_release/
+.npm-cache/
+*.log
+
+# 本机个性化配置（不提交，避免覆盖各自仓库）
+update-config.json
